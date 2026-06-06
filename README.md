@@ -1,4 +1,4 @@
-# AstraCreate-Finder
+# AstraCreate for macOS / 星域文件新建
 
 <p align="center">
   <a href="#中文"><strong>中文</strong></a>
@@ -15,7 +15,7 @@
 
 ## 中文
 
-**AstraCreate for macOS（星域新建）** 是一个 macOS Finder 右键菜单工具。安装后，可以在 Finder 文件夹空白处或选中文件后右键，直接新建常见文件、打开终端或 VS Code，并进行剪贴、粘贴和复制绝对路径等操作。
+**AstraCreate for macOS（星域文件新建）** 是一个 macOS Finder 右键菜单工具。安装后，可以在 Finder 文件夹空白处或选中文件后右键，直接新建常见文件、打开终端或 VS Code，并进行剪贴、粘贴和复制绝对路径等操作。
 
 本项目由持有者为了在多系统之间保持同一种文件操作习惯而编写。欢迎在使用过程中指出 Bug，并请尽量附上 macOS 系统版本、设备类型、复现步骤和相关截图，方便定位问题。
 
