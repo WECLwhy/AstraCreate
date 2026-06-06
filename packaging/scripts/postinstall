@@ -1,0 +1,8 @@
+#!/bin/zsh
+
+/System/Library/Frameworks/CoreServices.framework/Frameworks/LaunchServices.framework/Support/lsregister -f /Applications/AstraCreate.app
+/usr/bin/pluginkit -a /Applications/AstraCreate.app/Contents/PlugIns/AstraCreateFinderExtension.appex
+/usr/bin/pluginkit -e use -i com.astracreate.finder.extension
+/usr/bin/killall Finder >/dev/null 2>&1 || true
+
+exit 0

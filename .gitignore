@@ -1,0 +1,36 @@
+# macOS
+.DS_Store
+._*
+.AppleDouble
+.LSOverride
+
+# Build outputs
+build/
+dist/
+DerivedData/
+*.app
+*.appex
+*.pkg
+*.dmg
+*.zip
+
+# Xcode / Swift local state
+*.xcuserstate
+*.xcuserdata/
+*.xcworkspace/xcuserdata/
+*.xcodeproj/xcuserdata/
+.build/
+
+# Logs and temporary files
+*.log
+*.tmp
+*.swp
+
+# Local configuration and signing assets
+.env
+.env.*
+*.pem
+*.key
+*.p12
+*.cer
+*.mobileprovision
