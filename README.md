@@ -40,7 +40,6 @@
 - 复制选中文件或当前文件夹的绝对路径
 - 设置界面支持开启或关闭每个右键菜单功能
 - 设置界面支持中文 / English 切换，右键菜单和新文件默认名称会跟随语言
-- App 图标按照 Apple 推荐的 1024 x 1024 源图和多尺寸 `.icns` 资源生成
 
 ### 系统要求
 
@@ -149,7 +148,6 @@ This project was created by the owner to keep the same file-operation habits acr
 - Copy absolute paths for selected items or the current folder
 - Settings window for enabling or disabling each context menu feature
 - Chinese / English language switch for the settings window, context menu, and default new-file names
-- App icon packaged from a 1024 x 1024 source image into a standard multi-size `.icns`
 
 ### Requirements
 
