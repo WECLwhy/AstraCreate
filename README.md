@@ -1,8 +1,30 @@
 # AstraCreate-Finder
 
+<p align="center">
+  <a href="#中文"><strong>中文</strong></a>
+  |
+  <a href="#english"><strong>English</strong></a>
+</p>
+
+## 下载 / Download
+
+- 安装包 / Package: [AstraCreate-2.14.pkg](https://github.com/WECLwhy/AstraCreate/releases/download/v2.14/AstraCreate-2.14.pkg)
+- 文件大小 / File size: 2.0 MB (2,108,548 bytes)
+- 系统版本 / System version: macOS 13 or later, Apple Silicon Mac
+- 文档更新时间 / Document updated: 2026-06-07
+
 ## 中文
 
 **AstraCreate for macOS（星域新建）** 是一个 macOS Finder 右键菜单工具。安装后，可以在 Finder 文件夹空白处或选中文件后右键，直接新建常见文件、打开终端或 VS Code，并进行剪贴、粘贴和复制绝对路径等操作。
+
+本项目由持有者为了在多系统之间保持同一种文件操作习惯而编写。欢迎在使用过程中指出 Bug，并请尽量附上 macOS 系统版本、设备类型、复现步骤和相关截图，方便定位问题。
+
+### 下载
+
+- 安装包：[AstraCreate-2.14.pkg](https://github.com/WECLwhy/AstraCreate/releases/download/v2.14/AstraCreate-2.14.pkg)
+- 文件大小：2.0 MB (2,108,548 bytes)
+- 适用系统：macOS 13 或更高版本，Apple Silicon Mac
+- 文档更新时间：2026-06-07
 
 ### 功能
 
@@ -29,7 +51,7 @@
 
 ### 安装
 
-下载并打开 `AstraCreate-2.14.pkg`。安装脚本会：
+下载并打开 [AstraCreate-2.14.pkg](https://github.com/WECLwhy/AstraCreate/releases/download/v2.14/AstraCreate-2.14.pkg)。安装脚本会：
 
 - 把 `AstraCreate.app` 安装到 `/Applications`
 - 注册 Finder Sync 扩展
@@ -104,6 +126,15 @@ killall Finder
 
 **AstraCreate for macOS** is a Finder context menu utility for macOS. After installation, you can right-click a blank area in Finder or selected items to create common files, open Terminal or VS Code, cut and paste files, and copy absolute paths.
 
+This project was created by the owner to keep the same file-operation habits across multiple operating systems. Bug reports are welcome. When reporting an issue, please include your macOS version, device type, reproduction steps, and screenshots when possible.
+
+### Download
+
+- Package: [AstraCreate-2.14.pkg](https://github.com/WECLwhy/AstraCreate/releases/download/v2.14/AstraCreate-2.14.pkg)
+- File size: 2.0 MB (2,108,548 bytes)
+- System version: macOS 13 or later, Apple Silicon Mac
+- Document updated: 2026-06-07
+
 ### Features
 
 - Create Word documents `.docx`
@@ -129,7 +160,7 @@ killall Finder
 
 ### Install
 
-Download and open `AstraCreate-2.14.pkg`. The installer will:
+Download and open [AstraCreate-2.14.pkg](https://github.com/WECLwhy/AstraCreate/releases/download/v2.14/AstraCreate-2.14.pkg). The installer will:
 
 - Install `AstraCreate.app` into `/Applications`
 - Register the Finder Sync extension
