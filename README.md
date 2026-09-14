@@ -8,10 +8,9 @@
 
 ## 下载 / Download
 
-- 安装包 / Package: [AstraCreate-2.14.pkg](https://github.com/WECLwhy/AstraCreate/releases/download/v2.14/AstraCreate-2.14.pkg)
-- 文件大小 / File size: 2.0 MB (2,108,548 bytes)
+- 安装包 / Package: [AstraCreate-2.16.pkg](https://github.com/WECLwhy/AstraCreate/releases/download/v2.16/AstraCreate-2.16.pkg)
 - 系统版本 / System version: macOS 13 or later, Apple Silicon Mac
-- 文档更新时间 / Document updated: 2026-06-07
+- 文档更新时间 / Document updated: 2026-09-14
 
 ## 中文
 
@@ -21,10 +20,20 @@
 
 ### 下载
 
-- 安装包：[AstraCreate-2.14.pkg](https://github.com/WECLwhy/AstraCreate/releases/download/v2.14/AstraCreate-2.14.pkg)
-- 文件大小：2.0 MB (2,108,548 bytes)
+- 安装包：[AstraCreate-2.16.pkg](https://github.com/WECLwhy/AstraCreate/releases/download/v2.16/AstraCreate-2.16.pkg)
 - 适用系统：macOS 13 或更高版本，Apple Silicon Mac
-- 文档更新时间：2026-06-07
+- 文档更新时间：2026-09-14
+
+发布详情与已知问题见 [发布说明](RELEASE_NOTES.md)，本地数据处理见 [隐私说明](PRIVACY.md)。
+
+### 2.16 更新
+
+- Finder 工具栏新增 AstraCreate 图标，点击展开与右键共用的操作，另有设置入口。位置由 Finder 布局决定，可通过“自定工具栏”添加和调整。
+- 设置界面按新建文件、打开工具、文件操作分组，说明文字统一对齐。
+- 剪切由 Finder 扩展直接记录待移动项，不再唤起主程序；粘贴时才移动，菜单显示待移动数量。
+- 无选中项时禁用剪切，无待移动项时禁用粘贴；无有效目录时禁用工具栏中的文件操作。
+- 修复同目录粘贴误改名，部分移动失败时保留失败项供重试，并显示失败提示。
+- 日常设置立即保存，下次打开菜单生效；重启 Finder 仅作为需要确认的故障修复入口。
 
 ### 功能
 
@@ -50,7 +59,7 @@
 
 ### 安装
 
-下载并打开 [AstraCreate-2.14.pkg](https://github.com/WECLwhy/AstraCreate/releases/download/v2.14/AstraCreate-2.14.pkg)。安装脚本会：
+下载并打开 [AstraCreate-2.16.pkg](https://github.com/WECLwhy/AstraCreate/releases/download/v2.16/AstraCreate-2.16.pkg)。安装脚本会：
 
 - 把 `AstraCreate.app` 安装到 `/Applications`
 - 注册 Finder Sync 扩展
@@ -67,9 +76,9 @@
 
 ### 使用
 
-在 Finder 中打开任意文件夹，在空白处右键即可看到菜单项。剪贴需要先选中文件或文件夹后右键点击“剪贴”，再到目标文件夹空白处右键点击“粘贴”。
+在 Finder 中打开任意文件夹，在空白处右键即可看到菜单项。移动文件时，先选中项目并点击“剪切（粘贴时移动）”，再到目标文件夹点击“将 N 项移到此处”。此队列独立于系统剪贴板。
 
-双击 `/Applications/AstraCreate.app` 可以打开设置界面。勾选或取消对应功能、切换中文 / English 后，点击“应用并重启 Finder”即可刷新右键菜单。
+双击 `/Applications/AstraCreate.app` 可以打开设置界面。勾选或取消对应功能、切换中文 / English 后，下次打开菜单即可生效。仅在菜单或工具栏未更新时使用“修复菜单显示…”。
 
 首次在“桌面”“文稿”等受 macOS 隐私保护的位置操作时，系统可能会询问文件访问权限，请选择允许。
 
@@ -86,6 +95,14 @@ chmod +x scripts/build.sh scripts/package.sh packaging/scripts/postinstall
 build/AstraCreate.app
 ```
 
+### 测试
+
+```zsh
+./scripts/test.sh
+```
+
+覆盖 12,288 组菜单组合、旧配置、异常配置和不支持的菜单场景。
+
 ### 打包
 
 ```zsh
@@ -95,15 +112,16 @@ build/AstraCreate.app
 输出：
 
 ```text
-dist/AstraCreate-2.14.pkg
-dist/AstraCreate-Finder-2.14-source.zip
+dist/AstraCreate-2.16.pkg
+dist/AstraCreate-Finder-2.16-source.zip
 ```
 
 ### 项目结构
 
 ```text
 src/Main.swift                 设置界面主程序
-src/Helper.swift               无窗口 helper，负责创建文件、打开应用、剪贴和粘贴
+src/FileMoveClipboard.swift    待移动队列与安全粘贴逻辑
+src/Helper.swift               旧版命令行 helper（保留兼容）
 src/FinderSyncObjC.m           Finder Sync 扩展，负责右键菜单和命令转发
 Resources/SoftwareLogo.png     原始图标基准图
 Resources/AppIcon.icns         标准 macOS 多尺寸 app 图标
@@ -129,10 +147,20 @@ This project was created by the owner to keep the same file-operation habits acr
 
 ### Download
 
-- Package: [AstraCreate-2.14.pkg](https://github.com/WECLwhy/AstraCreate/releases/download/v2.14/AstraCreate-2.14.pkg)
-- File size: 2.0 MB (2,108,548 bytes)
+- Package: [AstraCreate-2.16.pkg](https://github.com/WECLwhy/AstraCreate/releases/download/v2.16/AstraCreate-2.16.pkg)
 - System version: macOS 13 or later, Apple Silicon Mac
-- Document updated: 2026-06-07
+- Document updated: 2026-09-14
+
+See [release notes and known issues](RELEASE_NOTES.md) and [privacy information](PRIVACY.md).
+
+### What’s New in 2.16
+
+- Added a native AstraCreate Finder toolbar menu with the same actions and a Settings entry. Finder controls its position; add or reposition it with Customize Toolbar if needed.
+- Grouped settings with aligned descriptions and immediate preference updates.
+- Cut now records pending items in the extension without launching the host. Files move only on paste; the menu shows the pending count.
+- Disabled unavailable actions and avoided guessing a destination when no folder is targeted.
+- Same-directory paste no longer renames files; failed moves remain pending for retry and display an error.
+- Finder restart is now an explicitly confirmed troubleshooting action.
 
 ### Features
 
@@ -158,7 +186,7 @@ This project was created by the owner to keep the same file-operation habits acr
 
 ### Install
 
-Download and open [AstraCreate-2.14.pkg](https://github.com/WECLwhy/AstraCreate/releases/download/v2.14/AstraCreate-2.14.pkg). The installer will:
+Download and open [AstraCreate-2.16.pkg](https://github.com/WECLwhy/AstraCreate/releases/download/v2.16/AstraCreate-2.16.pkg). The installer will:
 
 - Install `AstraCreate.app` into `/Applications`
 - Register the Finder Sync extension
@@ -175,9 +203,9 @@ Then make sure the AstraCreate Finder extension is enabled.
 
 ### Usage
 
-Open any folder in Finder and right-click on a blank area to see the menu items. For cut/paste, first select files or folders and choose “剪贴”, then right-click in the destination folder and choose “粘贴”.
+Open any folder in Finder and right-click on a blank area to see the menu items. For cut/paste, select files and choose “Cut (Move on Paste)”, then choose “Move N Item(s) Here” in the destination folder. This pending-move queue is independent of the system clipboard.
 
-Open `/Applications/AstraCreate.app` to show the settings window. Toggle the desired features or switch between Chinese and English, then click “Apply and Restart Finder” to refresh Finder.
+Open `/Applications/AstraCreate.app` to show the settings window. Toggle the desired features or switch between Chinese and English, then reopen the menu to apply. Use “Refresh Finder…” only if menus or the toolbar do not update.
 
 When operating in privacy-protected locations such as Desktop or Documents for the first time, macOS may ask for file access permission. Allow it if prompted.
 
@@ -194,6 +222,14 @@ The built app will be available at:
 build/AstraCreate.app
 ```
 
+### Tests
+
+```zsh
+./scripts/test.sh
+```
+
+Checks 12,288 menu combinations, legacy/invalid settings and unsupported menu contexts.
+
 ### Package
 
 ```zsh
@@ -203,15 +239,16 @@ build/AstraCreate.app
 Outputs:
 
 ```text
-dist/AstraCreate-2.14.pkg
-dist/AstraCreate-Finder-2.14-source.zip
+dist/AstraCreate-2.16.pkg
+dist/AstraCreate-Finder-2.16-source.zip
 ```
 
 ### Project Structure
 
 ```text
 src/Main.swift                 Settings UI host app
-src/Helper.swift               Windowless helper: file creation, app launching, cut and paste
+src/FileMoveClipboard.swift    Pending move queue and paste handling
+src/Helper.swift               Legacy command-line helper
 src/FinderSyncObjC.m           Finder Sync extension: context menu and command forwarding
 Resources/SoftwareLogo.png     Original icon reference image
 Resources/AppIcon.icns         Standard multi-size macOS app icon

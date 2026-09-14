@@ -34,7 +34,7 @@ private let menuFeatures: [MenuFeature] = [
     MenuFeature(key: "md", zhTitle: "新建 Markdown 文件", enTitle: "New Markdown File", zhDetail: ".md", enDetail: ".md"),
     MenuFeature(key: "terminal", zhTitle: "在此处打开终端", enTitle: "Open Terminal Here", zhDetail: "Terminal", enDetail: "Terminal"),
     MenuFeature(key: "vscode", zhTitle: "在 VS Code 打开当前文件夹", enTitle: "Open Current Folder in VS Code", zhDetail: "Visual Studio Code", enDetail: "Visual Studio Code"),
-    MenuFeature(key: "cut", zhTitle: "剪贴", enTitle: "Cut", zhDetail: "移动选中文件", enDetail: "Move selected items"),
+    MenuFeature(key: "cut", zhTitle: "剪切", enTitle: "Cut", zhDetail: "粘贴时才移动", enDetail: "Move only when pasted"),
     MenuFeature(key: "paste", zhTitle: "粘贴", enTitle: "Paste", zhDetail: "粘贴到当前文件夹", enDetail: "Paste into current folder"),
     MenuFeature(key: "copyPath", zhTitle: "复制绝对路径", enTitle: "Copy Absolute Path", zhDetail: "复制文件或文件夹路径", enDetail: "Copy file or folder paths")
 ]
@@ -42,6 +42,7 @@ private let menuFeatures: [MenuFeature] = [
 private struct AppSettings {
     var enabled: [String: Bool]
     var language: AppLanguage
+    var groupNewFiles = true
 }
 
 private func extensionSupportDirectory() -> URL {
@@ -57,15 +58,15 @@ private func defaultEnabledFeatures() -> [String: Bool] {
     Dictionary(uniqueKeysWithValues: menuFeatures.map { ($0.key, true) })
 }
 
-private func loadSettings() -> AppSettings {
+private func loadSettings(from url: URL = settingsURL()) -> AppSettings {
     var enabled = defaultEnabledFeatures()
     var language = AppLanguage.zh
-    guard let data = try? Data(contentsOf: settingsURL()),
-          let object = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
-          let saved = object["enabled"] as? [String: Any] else {
+    guard let data = try? Data(contentsOf: url),
+          let object = try? JSONSerialization.jsonObject(with: data) as? [String: Any] else {
         return AppSettings(enabled: enabled, language: language)
     }
 
+    let saved = object["enabled"] as? [String: Any] ?? [:]
     for feature in menuFeatures {
         if let value = saved[feature.key] as? Bool {
             enabled[feature.key] = value
@@ -76,7 +77,7 @@ private func loadSettings() -> AppSettings {
        let savedLanguage = AppLanguage(rawValue: raw) {
         language = savedLanguage
     }
-    return AppSettings(enabled: enabled, language: language)
+    return AppSettings(enabled: enabled, language: language, groupNewFiles: object["groupNewFiles"] as? Bool ?? true)
 }
 
 private func loadEnabledFeatures() -> [String: Bool] {
@@ -87,11 +88,11 @@ private func loadAppLanguage() -> AppLanguage {
     loadSettings().language
 }
 
-private func saveSettings(_ settings: AppSettings) throws {
-    let payload: [String: Any] = ["enabled": settings.enabled, "language": settings.language.rawValue]
+private func saveSettings(_ settings: AppSettings, to url: URL = settingsURL()) throws {
+    let payload: [String: Any] = ["enabled": settings.enabled, "language": settings.language.rawValue, "groupNewFiles": settings.groupNewFiles]
     let data = try JSONSerialization.data(withJSONObject: payload, options: [.prettyPrinted, .sortedKeys])
-    try FileManager.default.createDirectory(at: extensionSupportDirectory(), withIntermediateDirectories: true)
-    try data.write(to: settingsURL(), options: .atomic)
+    try FileManager.default.createDirectory(at: url.deletingLastPathComponent(), withIntermediateDirectories: true)
+    try data.write(to: url, options: .atomic)
 }
 
 final class SettingsWindowController: NSWindowController {
@@ -102,14 +103,17 @@ final class SettingsWindowController: NSWindowController {
     private let subtitleLabel = NSTextField(labelWithString: "")
     private let languageLabel = NSTextField(labelWithString: "")
     private let languageControl = NSSegmentedControl(labels: ["中文", "English"], trackingMode: .selectOne, target: nil, action: nil)
+    private let groupNewFilesCheckbox = NSButton(checkboxWithTitle: "", target: nil, action: nil)
     private let enableAllButton = NSButton(title: "", target: nil, action: nil)
     private let disableAllButton = NSButton(title: "", target: nil, action: nil)
     private let restartFinderButton = NSButton(title: "", target: nil, action: nil)
+    private var sectionLabels: [NSTextField] = []
+    private let toolbarHintLabel = NSTextField(wrappingLabelWithString: "")
     private let statusLabel = NSTextField(labelWithString: "")
 
     init() {
         let window = NSWindow(
-            contentRect: NSRect(x: 0, y: 0, width: 460, height: 560),
+            contentRect: NSRect(x: 0, y: 0, width: 640, height: 690),
             styleMask: [.titled, .closable, .miniaturizable],
             backing: .buffered,
             defer: false
@@ -131,7 +135,7 @@ final class SettingsWindowController: NSWindowController {
         let root = NSStackView()
         root.orientation = .vertical
         root.alignment = .leading
-        root.spacing = 14
+        root.spacing = 12
         root.translatesAutoresizingMaskIntoConstraints = false
         contentView.addSubview(root)
 
@@ -162,37 +166,64 @@ final class SettingsWindowController: NSWindowController {
         languageRow.addArrangedSubview(languageControl)
         root.addArrangedSubview(languageRow)
 
-        let list = NSStackView()
-        list.orientation = .vertical
-        list.alignment = .leading
-        list.spacing = 8
-        root.addArrangedSubview(list)
+        groupNewFilesCheckbox.target = self
+        groupNewFilesCheckbox.action = #selector(toggleChanged(_:))
+        root.addArrangedSubview(groupNewFilesCheckbox)
 
-        for feature in menuFeatures {
-            let row = NSStackView()
-            row.orientation = .horizontal
-            row.alignment = .centerY
-            row.spacing = 8
-            row.translatesAutoresizingMaskIntoConstraints = false
-
-            let checkbox = NSButton(checkboxWithTitle: "", target: self, action: #selector(toggleChanged(_:)))
-            checkbox.identifier = NSUserInterfaceItemIdentifier(feature.key)
-            checkbox.font = NSFont.systemFont(ofSize: 14)
-            checkbox.setContentHuggingPriority(.defaultLow, for: .horizontal)
-            checkboxes[feature.key] = checkbox
-
-            let detail = NSTextField(labelWithString: "")
-            detail.textColor = .secondaryLabelColor
-            detail.font = NSFont.systemFont(ofSize: 12)
-            detail.alignment = .right
-            detail.widthAnchor.constraint(greaterThanOrEqualToConstant: 112).isActive = true
-            detailLabels[feature.key] = detail
-
-            row.addArrangedSubview(checkbox)
-            row.addArrangedSubview(detail)
-            list.addArrangedSubview(row)
-            row.widthAnchor.constraint(equalTo: root.widthAnchor).isActive = true
+        for features in [Array(menuFeatures[0..<5]), Array(menuFeatures[5..<7]), Array(menuFeatures[7..<10])] {
+            let box = NSBox()
+            box.boxType = .custom
+            box.borderColor = .separatorColor
+            box.fillColor = .controlBackgroundColor
+            box.cornerRadius = 10
+            box.contentViewMargins = NSSize(width: 14, height: 10)
+            root.addArrangedSubview(box)
+            box.widthAnchor.constraint(equalTo: root.widthAnchor).isActive = true
+            let list = NSStackView()
+            list.orientation = .vertical
+            list.alignment = .leading
+            list.spacing = 4
+            list.translatesAutoresizingMaskIntoConstraints = false
+            box.contentView!.addSubview(list)
+            NSLayoutConstraint.activate([
+                list.leadingAnchor.constraint(equalTo: box.contentView!.leadingAnchor),
+                list.trailingAnchor.constraint(equalTo: box.contentView!.trailingAnchor),
+                list.topAnchor.constraint(equalTo: box.contentView!.topAnchor),
+                list.bottomAnchor.constraint(equalTo: box.contentView!.bottomAnchor)
+            ])
+            let heading = NSTextField(labelWithString: "")
+            heading.font = .systemFont(ofSize: 12, weight: .semibold)
+            heading.textColor = .secondaryLabelColor
+            sectionLabels.append(heading)
+            list.addArrangedSubview(heading)
+            for feature in features {
+                let row = NSView()
+                let checkbox = NSButton(checkboxWithTitle: "", target: self, action: #selector(toggleChanged(_:)))
+                checkbox.identifier = NSUserInterfaceItemIdentifier(feature.key)
+                checkbox.font = .systemFont(ofSize: 13)
+                checkboxes[feature.key] = checkbox
+                let detail = NSTextField(labelWithString: "")
+                detail.font = .systemFont(ofSize: 12)
+                detail.textColor = .secondaryLabelColor
+                detail.alignment = .right
+                detailLabels[feature.key] = detail
+                for view in [checkbox, detail] { view.translatesAutoresizingMaskIntoConstraints = false; row.addSubview(view) }
+                list.addArrangedSubview(row)
+                NSLayoutConstraint.activate([
+                    row.widthAnchor.constraint(equalTo: list.widthAnchor),
+                    row.heightAnchor.constraint(equalToConstant: 25),
+                    checkbox.leadingAnchor.constraint(equalTo: row.leadingAnchor),
+                    checkbox.centerYAnchor.constraint(equalTo: row.centerYAnchor),
+                    detail.trailingAnchor.constraint(equalTo: row.trailingAnchor),
+                    detail.centerYAnchor.constraint(equalTo: row.centerYAnchor),
+                    checkbox.trailingAnchor.constraint(lessThanOrEqualTo: detail.leadingAnchor, constant: -12)
+                ])
+            }
         }
+        toolbarHintLabel.font = .systemFont(ofSize: 12)
+        toolbarHintLabel.textColor = .secondaryLabelColor
+        root.addArrangedSubview(toolbarHintLabel)
+        toolbarHintLabel.widthAnchor.constraint(equalTo: root.widthAnchor).isActive = true
 
         let buttons = NSStackView()
         buttons.orientation = .horizontal
@@ -220,12 +251,13 @@ final class SettingsWindowController: NSWindowController {
     private func loadState() {
         let settings = loadSettings()
         currentLanguage = settings.language
+        groupNewFilesCheckbox.state = settings.groupNewFiles ? .on : .off
         languageControl.selectedSegment = currentLanguage == .en ? 1 : 0
         let enabled = settings.enabled
         for (key, checkbox) in checkboxes {
             checkbox.state = (enabled[key] ?? true) ? .on : .off
         }
-        applyLanguage(status: localized("设置会自动保存。", "Settings are saved automatically."))
+        applyLanguage(status: localized("自动保存，下次打开菜单时生效。", "Saved automatically; changes apply when the menu reopens."))
     }
 
     private func currentState() -> [String: Bool] {
@@ -235,7 +267,7 @@ final class SettingsWindowController: NSWindowController {
     }
 
     private func currentSettings() -> AppSettings {
-        AppSettings(enabled: currentState(), language: currentLanguage)
+        AppSettings(enabled: currentState(), language: currentLanguage, groupNewFiles: groupNewFilesCheckbox.state == .on)
     }
 
     private func localized(_ zh: String, _ en: String) -> String {
@@ -243,18 +275,22 @@ final class SettingsWindowController: NSWindowController {
     }
 
     private func applyLanguage(status: String? = nil) {
-        titleLabel.stringValue = localized("右键菜单功能开关", "Context Menu Features")
-        subtitleLabel.stringValue = localized("勾选后会出现在 Finder 空白处或选中文件的右键菜单中。", "Enabled items appear in Finder when right-clicking a blank area or selected items.")
+        titleLabel.stringValue = localized("AstraCreate · 文件操作", "AstraCreate · File Actions")
+        subtitleLabel.stringValue = localized("右键菜单与工具栏，共用一套常用操作。", "Your everyday actions, in the context menu and toolbar.")
+        let headings = [localized("新建文件", "CREATE FILES"), localized("打开工具", "OPEN TOOLS"), localized("文件操作", "FILE ACTIONS")]
+        for (label, title) in zip(sectionLabels, headings) { label.stringValue = title }
+        toolbarHintLabel.stringValue = localized("Finder 右上角点击 AstraCreate 图标展开操作；若未显示，在工具栏右键 → 自定工具栏中添加。", "Click AstraCreate in the Finder toolbar. If missing, right-click the toolbar → Customize Toolbar to add it.")
+        groupNewFilesCheckbox.title = localized("将新建文件折叠到二级菜单", "Group new files in a submenu")
         languageLabel.stringValue = localized("语言", "Language")
         enableAllButton.title = localized("全部开启", "Enable All")
         disableAllButton.title = localized("全部关闭", "Disable All")
-        restartFinderButton.title = localized("应用并重启 Finder", "Apply and Restart Finder")
+        restartFinderButton.title = localized("修复菜单显示…", "Refresh Finder…")
 
         for feature in menuFeatures {
             checkboxes[feature.key]?.title = feature.title(for: currentLanguage)
             detailLabels[feature.key]?.stringValue = feature.detail(for: currentLanguage)
         }
-        statusLabel.stringValue = status ?? localized("设置会自动保存。", "Settings are saved automatically.")
+        statusLabel.stringValue = status ?? localized("自动保存，下次打开菜单时生效。", "Saved automatically; changes apply when the menu reopens.")
     }
 
     private func saveState(status: String = "已保存。") {
@@ -273,7 +309,7 @@ final class SettingsWindowController: NSWindowController {
     @objc private func languageChanged(_ sender: NSSegmentedControl) {
         currentLanguage = sender.selectedSegment == 1 ? .en : .zh
         applyLanguage(status: localized("已切换为中文。", "Switched to English."))
-        saveState(status: localized("语言已保存，重启 Finder 后右键菜单生效。", "Language saved. Restart Finder to update the context menu."))
+        saveState(status: localized("语言已保存，下次打开菜单时生效。", "Language saved. Reopen the menu to apply."))
     }
 
     @objc private func enableAllFeatures() {
@@ -291,6 +327,12 @@ final class SettingsWindowController: NSWindowController {
     }
 
     @objc private func applyAndRestartFinder() {
+        let alert = NSAlert()
+        alert.messageText = localized("重新启动 Finder？", "Restart Finder?")
+        alert.informativeText = localized("普通设置无需重启。仅在菜单或工具栏图标未更新时使用，Finder 窗口会短暂关闭。", "Settings do not need a restart. Use this only if menus or the toolbar have not updated; Finder windows will briefly close.")
+        alert.addButton(withTitle: localized("重启 Finder", "Restart Finder"))
+        alert.addButton(withTitle: localized("取消", "Cancel"))
+        guard alert.runModal() == .alertFirstButtonReturn else { return }
         saveState(status: localized("已保存，正在重启 Finder...", "Saved. Restarting Finder..."))
         let process = Process()
         process.executableURL = URL(fileURLWithPath: "/usr/bin/killall")
@@ -407,6 +449,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         guard let components = URLComponents(url: url, resolvingAgainstBaseURL: false) else {
             return
         }
+        if components.host == "settings" {
+            showSettingsWindow()
+            return
+        }
         let items = components.queryItems ?? []
         guard components.host == "run",
               let command = items.first(where: { $0.name == "command" })?.value,
@@ -418,7 +464,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         let selectedPaths = parseSelectedPaths(selectedRaw)
         log("launch mode url command")
         run(command: command, path: path, selectedPaths: selectedPaths)
-        NSApp.terminate(nil)
+        if settingsWindowController?.window?.isVisible != true { NSApp.terminate(nil) }
     }
 
     private func parseSelectedPaths(_ raw: String?) -> [String] {
@@ -559,84 +605,37 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         }
     }
 
+    private var moveClipboard: FileMoveClipboard {
+        FileMoveClipboard(url: extensionSupportDirectory().appendingPathComponent("clipboard.json"))
+    }
+
     private func cut(paths: [String]) {
         let existing = paths.filter { FileManager.default.fileExists(atPath: $0) }
-        guard !existing.isEmpty else {
-            log("cut skipped: no selected paths")
-            return
-        }
-
-        let payload: [String: Any] = ["operation": "move", "paths": existing]
-        do {
-            let data = try JSONSerialization.data(withJSONObject: payload)
-            try FileManager.default.createDirectory(at: stateDirectory(), withIntermediateDirectories: true)
-            try data.write(to: clipboardURL(), options: .atomic)
-            log("cut stored \(existing.count) item(s)")
-        } catch {
-            log("cut failed: \(error)")
-        }
+        guard !existing.isEmpty else { return }
+        do { try moveClipboard.store(existing) }
+        catch { showMoveError(error.localizedDescription) }
     }
 
     private func paste(into directory: URL) {
-        guard let data = try? Data(contentsOf: clipboardURL()),
-              let object = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
-              let operation = object["operation"] as? String,
-              operation == "move" else {
-            log("paste skipped: no cut clipboard")
-            return
-        }
-
-        let paths = (object["paths"] as? [Any] ?? []).compactMap { $0 as? String }
-        log("paste loaded \(paths.count) item(s) into \(directory.path)")
-        var revealed: [URL] = []
-        for path in paths {
-            let source = URL(fileURLWithPath: path)
-            log("paste considering \(source.path)")
-            let sourceExists = FileManager.default.fileExists(atPath: source.path)
-            log("paste source exists \(sourceExists) for \(source.path)")
-            guard sourceExists else {
-                log("paste missing source \(source.path)")
-                continue
+        do {
+            let result = try moveClipboard.paste(into: directory)
+            log("paste: \(result.moved.count) moved, \(result.unchanged.count) unchanged, \(result.failures.count) failed")
+            if !result.failures.isEmpty {
+                showMoveError(loadAppLanguage() == .en
+                    ? "Some items could not be moved and remain pending: \(result.failures.joined(separator: ", "))"
+                    : "以下项目未能移动，已保留以便重试：\(result.failures.joined(separator: "、"))")
             }
-            let destination = uniqueDestination(for: source, in: directory)
-            log("paste destination \(destination.path)")
-            do {
-                try FileManager.default.moveItem(at: source, to: destination)
-                revealed.append(destination)
-                log("moved \(source.path) -> \(destination.path)")
-            } catch {
-                log("move failed \(source.path): \(error)")
-            }
-        }
-
-        try? FileManager.default.removeItem(at: clipboardURL())
-        log("paste completed with \(revealed.count) moved item(s)")
-        if let first = revealed.first {
-            reveal(first)
-        }
+            if let first = result.moved.first { reveal(first) }
+        } catch { showMoveError(error.localizedDescription) }
     }
 
-    private func uniqueDestination(for source: URL, in directory: URL) -> URL {
-        let name = source.deletingPathExtension().lastPathComponent
-        let ext = source.pathExtension
-        var index = 1
-        while true {
-            let suffix = index == 1 ? "" : " \(index)"
-            let fileName = ext.isEmpty ? "\(name)\(suffix)" : "\(name)\(suffix).\(ext)"
-            let candidate = directory.appendingPathComponent(fileName)
-            if !FileManager.default.fileExists(atPath: candidate.path) {
-                return candidate
-            }
-            index += 1
-        }
-    }
-
-    private func stateDirectory() -> URL {
-        URL(fileURLWithPath: "/private/tmp")
-    }
-
-    private func clipboardURL() -> URL {
-        stateDirectory().appendingPathComponent("AstraCreateClipboard.json")
+    private func showMoveError(_ message: String) {
+        let alert = NSAlert()
+        alert.messageText = loadAppLanguage() == .en ? "Unable to move items" : "未能完成移动"
+        alert.informativeText = message
+        alert.alertStyle = .warning
+        NSApp.activate(ignoringOtherApps: true)
+        alert.runModal()
     }
 
     private func uniqueFile(in directory: URL, base: String, ext: String) -> URL {
@@ -760,20 +759,16 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     }
 
     private func log(_ message: String) {
-        let line = "\(Date()) \(message)\n"
-        let url = URL(fileURLWithPath: "/tmp/AstraCreateHost.log")
-        guard let data = line.data(using: .utf8) else { return }
-        if FileManager.default.fileExists(atPath: url.path), let handle = try? FileHandle(forWritingTo: url) {
-            _ = try? handle.seekToEnd()
-            try? handle.write(contentsOf: data)
-            try? handle.close()
-        } else {
-            try? data.write(to: url)
-        }
+        // Release builds intentionally do not persist file paths or command URLs.
     }
 }
 
-let app = NSApplication.shared
-let delegate = AppDelegate()
-app.delegate = delegate
-app.run()
+@main
+struct AstraCreateApplication {
+    static func main() {
+        let app = NSApplication.shared
+        let delegate = AppDelegate()
+        app.delegate = delegate
+        app.run()
+    }
+}

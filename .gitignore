@@ -34,3 +34,9 @@ DerivedData/
 *.p12
 *.cer
 *.mobileprovision
+
+# Runtime and local diagnostic state
+clipboard.json
+settings.json
+*.trace
+*.ips

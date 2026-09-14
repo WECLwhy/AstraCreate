@@ -44,7 +44,7 @@ fi
 env CLANG_MODULE_CACHE_PATH="$MODULE_CACHE" xcrun swiftc \
   -target arm64-apple-macos13.0 \
   -o "$APP/Contents/MacOS/AstraCreate" \
-  "$ROOT/src/Main.swift" \
+  "$ROOT/src/Main.swift" "$ROOT/src/FileMoveClipboard.swift" \
   -framework AppKit
 
 env CLANG_MODULE_CACHE_PATH="$MODULE_CACHE" xcrun swiftc \

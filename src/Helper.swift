@@ -286,15 +286,7 @@ private func writeCommonProps(to root: URL) throws {
 }
 
 private func log(_ message: String) {
-    let line = "\(Date()) \(message)\n"
-    guard let data = line.data(using: .utf8) else { return }
-    if FileManager.default.fileExists(atPath: logURL.path), let handle = try? FileHandle(forWritingTo: logURL) {
-        _ = try? handle.seekToEnd()
-        try? handle.write(contentsOf: data)
-        try? handle.close()
-    } else {
-        try? data.write(to: logURL)
-    }
+    // Release builds intentionally do not persist file paths or command URLs.
 }
 
 let args = CommandLine.arguments
