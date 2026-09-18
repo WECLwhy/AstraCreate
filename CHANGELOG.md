@@ -1,5 +1,13 @@
 # Changelog / 更新记录
 
+## Unreleased
+
+- 修复新建 Word 文档因未声明兼容性设置而进入兼容模式的问题；主程序和旧 helper 均显式设置 compatibilityMode=15。
+- 增加生成后 DOCX 检查，覆盖设置内容类型、文档关联及匿名作者字段。已有文件不会自动修改。
+
+- Fix newly created Word documents opening in compatibility mode by declaring compatibilityMode=15 in both generators. Existing documents are unchanged.
+- Add generated-package regression checks for settings, relationships, content types and empty author metadata.
+
 ## 2.16 — 2026-09-14
 
 Build 29: disable diagnostic log writes, remove personal Office/image metadata, and add bilingual release and privacy documentation.

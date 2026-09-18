@@ -2,7 +2,7 @@
 set -euo pipefail
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 mkdir -p "$ROOT/build/tests"
-xcrun clang -fobjc-arc -fmodules -Wno-incompatible-pointer-types \
+xcrun clang -target arm64-apple-macos13.0 -isysroot "$(xcrun --sdk macosx --show-sdk-path)" -fobjc-arc -fmodules -Wno-incompatible-pointer-types \
   -fmodules-cache-path="$ROOT/build/tests/module-cache" \
   -framework Cocoa -framework FinderSync \
   "$ROOT/tests/MenuTests.m" -o "$ROOT/build/tests/MenuTests"
@@ -16,3 +16,5 @@ xcrun swiftc -module-cache-path "$ROOT/build/tests/module-cache" \
   "$ROOT/src/FileMoveClipboard.swift" "$ROOT/tests/FileMoveTests.swift" \
   -o "$ROOT/build/tests/FileMoveTests"
 "$ROOT/build/tests/FileMoveTests"
+
+python3 "$ROOT/tests/DocxTests.py"
