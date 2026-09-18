@@ -23,11 +23,11 @@ COPYFILE_DISABLE=1 pkgbuild \
   --root "$PKGROOT" \
   --scripts "$ROOT/packaging/scripts" \
   --identifier com.astracreate.finder.pkg \
-  --version 2.16 \
+  --version 2.17 \
   --install-location / \
   --filter '.*\._.*' \
   --filter '.*\.DS_Store' \
-  "$OUT/AstraCreate-2.16.pkg"
+  "$OUT/AstraCreate-2.17.pkg"
 
 mkdir -p "$SOURCE_STAGE/AstraCreate-Finder"
 # Copy release inputs explicitly so packaging also works from a source ZIP.
@@ -40,9 +40,9 @@ done
   -x "*/.DS_Store" "*/._*" "*/.env" "*/.env.*" "*.log" "*.pem" "*.key" "*.p12" "*/clipboard.json" "*/settings.json")
 
 # Replace the archive instead of updating it, so removed private entries cannot survive.
-mv -f "$SOURCE_STAGE/source.zip" "$OUT/AstraCreate-Finder-2.16-source.zip"
+mv -f "$SOURCE_STAGE/source.zip" "$OUT/AstraCreate-Finder-2.17-source.zip"
 
-echo "Package: $OUT/AstraCreate-2.16.pkg"
-echo "Source:  $OUT/AstraCreate-Finder-2.16-source.zip"
+echo "Package: $OUT/AstraCreate-2.17.pkg"
+echo "Source:  $OUT/AstraCreate-Finder-2.17-source.zip"
 
-(cd "$OUT" && shasum -a 256 AstraCreate-2.16.pkg AstraCreate-Finder-2.16-source.zip > AstraCreate-2.16-SHA256SUMS.txt)
+(cd "$OUT" && shasum -a 256 AstraCreate-2.17.pkg AstraCreate-Finder-2.17-source.zip > AstraCreate-2.17-SHA256SUMS.txt)

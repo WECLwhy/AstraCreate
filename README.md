@@ -8,9 +8,9 @@
 
 ## 下载 / Download
 
-- 安装包 / Package: [AstraCreate-2.16.pkg](https://github.com/WECLwhy/AstraCreate/releases/download/v2.16/AstraCreate-2.16.pkg)
+- 安装包 / Package: [AstraCreate-2.17.pkg](https://github.com/WECLwhy/AstraCreate/releases/download/v2.17/AstraCreate-2.17.pkg)
 - 系统版本 / System version: macOS 13 or later, Apple Silicon Mac
-- 文档更新时间 / Document updated: 2026-09-14
+- 文档更新时间 / Document updated: 2026-09-18
 
 ## 中文
 
@@ -20,20 +20,18 @@
 
 ### 下载
 
-- 安装包：[AstraCreate-2.16.pkg](https://github.com/WECLwhy/AstraCreate/releases/download/v2.16/AstraCreate-2.16.pkg)
+- 安装包：[AstraCreate-2.17.pkg](https://github.com/WECLwhy/AstraCreate/releases/download/v2.17/AstraCreate-2.17.pkg)
 - 适用系统：macOS 13 或更高版本，Apple Silicon Mac
-- 文档更新时间：2026-09-14
+- 文档更新时间：2026-09-18
 
 发布详情与已知问题见 [发布说明](RELEASE_NOTES.md)，本地数据处理见 [隐私说明](PRIVACY.md)。
 
-### 2.16 更新
+### 2.17 更新
 
-- Finder 工具栏新增 AstraCreate 图标，点击展开与右键共用的操作，另有设置入口。位置由 Finder 布局决定，可通过“自定工具栏”添加和调整。
-- 设置界面按新建文件、打开工具、文件操作分组，说明文字统一对齐。
-- 剪切由 Finder 扩展直接记录待移动项，不再唤起主程序；粘贴时才移动，菜单显示待移动数量。
-- 无选中项时禁用剪切，无待移动项时禁用粘贴；无有效目录时禁用工具栏中的文件操作。
-- 修复同目录粘贴误改名，部分移动失败时保留失败项供重试，并显示失败提示。
-- 日常设置立即保存，下次打开菜单生效；重启 Finder 仅作为需要确认的故障修复入口。
+- 新建 Word 文档显式声明现代兼容性模式（compatibilityMode=15），补齐设置文件及关联；已有文档不变。
+- 增加主程序和旧 helper 的 DOCX 生成回归检查，验证包结构、兼容性和匿名作者字段。
+- 保留 Finder 工具栏、可配置新建子菜单、分组设置及剪切队列等功能。
+- 微信下载文件的只读权限不由本次更新修改；请参阅发布说明中的排查范围。
 
 ### 功能
 
@@ -59,7 +57,7 @@
 
 ### 安装
 
-下载并打开 [AstraCreate-2.16.pkg](https://github.com/WECLwhy/AstraCreate/releases/download/v2.16/AstraCreate-2.16.pkg)。安装脚本会：
+下载并打开 [AstraCreate-2.17.pkg](https://github.com/WECLwhy/AstraCreate/releases/download/v2.17/AstraCreate-2.17.pkg)。安装脚本会：
 
 - 把 `AstraCreate.app` 安装到 `/Applications`
 - 注册 Finder Sync 扩展
@@ -101,7 +99,7 @@ build/AstraCreate.app
 ./scripts/test.sh
 ```
 
-覆盖 12,288 组菜单组合、旧配置、异常配置和不支持的菜单场景。
+需要 Python 3 和 Xcode Command Line Tools。覆盖 12,288 组菜单组合、设置兼容性、真实文件移动，以及主程序和旧 helper 生成的 DOCX 包。
 
 ### 打包
 
@@ -112,8 +110,9 @@ build/AstraCreate.app
 输出：
 
 ```text
-dist/AstraCreate-2.16.pkg
-dist/AstraCreate-Finder-2.16-source.zip
+dist/AstraCreate-2.17.pkg
+dist/AstraCreate-Finder-2.17-source.zip
+dist/AstraCreate-2.17-SHA256SUMS.txt
 ```
 
 ### 项目结构
@@ -147,20 +146,18 @@ This project was created by the owner to keep the same file-operation habits acr
 
 ### Download
 
-- Package: [AstraCreate-2.16.pkg](https://github.com/WECLwhy/AstraCreate/releases/download/v2.16/AstraCreate-2.16.pkg)
+- Package: [AstraCreate-2.17.pkg](https://github.com/WECLwhy/AstraCreate/releases/download/v2.17/AstraCreate-2.17.pkg)
 - System version: macOS 13 or later, Apple Silicon Mac
-- Document updated: 2026-09-14
+- Document updated: 2026-09-18
 
 See [release notes and known issues](RELEASE_NOTES.md) and [privacy information](PRIVACY.md).
 
-### What’s New in 2.16
+### What’s New in 2.17
 
-- Added a native AstraCreate Finder toolbar menu with the same actions and a Settings entry. Finder controls its position; add or reposition it with Customize Toolbar if needed.
-- Grouped settings with aligned descriptions and immediate preference updates.
-- Cut now records pending items in the extension without launching the host. Files move only on paste; the menu shows the pending count.
-- Disabled unavailable actions and avoided guessing a destination when no folder is targeted.
-- Same-directory paste no longer renames files; failed moves remain pending for retry and display an error.
-- Finder restart is now an explicitly confirmed troubleshooting action.
+- Declare modern Word compatibility mode (compatibilityMode=15), with settings and relationships, in newly created documents. Existing documents are unchanged.
+- Add DOCX generation regression checks for both generators, including package structure and anonymous author metadata.
+- Retain the Finder toolbar, configurable new-file submenu, grouped settings and pending-move queue.
+- This update does not change read-only permissions on WeChat downloads; see release notes for the investigation scope.
 
 ### Features
 
@@ -186,7 +183,7 @@ See [release notes and known issues](RELEASE_NOTES.md) and [privacy information]
 
 ### Install
 
-Download and open [AstraCreate-2.16.pkg](https://github.com/WECLwhy/AstraCreate/releases/download/v2.16/AstraCreate-2.16.pkg). The installer will:
+Download and open [AstraCreate-2.17.pkg](https://github.com/WECLwhy/AstraCreate/releases/download/v2.17/AstraCreate-2.17.pkg). The installer will:
 
 - Install `AstraCreate.app` into `/Applications`
 - Register the Finder Sync extension
@@ -224,6 +221,8 @@ build/AstraCreate.app
 
 ### Tests
 
+Requires Python 3 and Xcode Command Line Tools. Includes generated DOCX validation for both writers.
+
 ```zsh
 ./scripts/test.sh
 ```
@@ -239,8 +238,9 @@ Checks 12,288 menu combinations, legacy/invalid settings and unsupported menu co
 Outputs:
 
 ```text
-dist/AstraCreate-2.16.pkg
-dist/AstraCreate-Finder-2.16-source.zip
+dist/AstraCreate-2.17.pkg
+dist/AstraCreate-Finder-2.17-source.zip
+dist/AstraCreate-2.17-SHA256SUMS.txt
 ```
 
 ### Project Structure
