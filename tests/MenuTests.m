@@ -6,6 +6,8 @@
 @property NSArray *testSelection;
 @property NSUInteger hostLaunchCount;
 @property BOOL testNoDirectory;
+@property NSString *lastCommand;
+@property NSDictionary *lastContext;
 @end
 @implementation TestFinderSync
 // Menu construction needs no live Finder connection or user's settings.
@@ -15,11 +17,12 @@
 #pragma clang diagnostic pop
 - (NSDictionary *)settingsObject { return self.testSettings ?: @{}; }
 - (void)log:(NSString *)message {}
+- (void)recordEvent:(NSString *)event error:(NSError *)error value:(NSNumber *)value {}
 - (NSURL *)targetDirectory { return self.testNoDirectory ? nil : [NSURL fileURLWithPath:@"/private/tmp"]; }
 - (NSArray *)selectedPaths { return self.testSelection ?: @[@"/private/tmp/menu-test.txt"]; }
 - (NSArray *)pendingCutPaths { return self.testClipboard ? [super pendingCutPaths] : @[@"/private/tmp/menu-test.txt"]; }
 - (NSURL *)clipboardFileURL { return self.testClipboard ?: [super clipboardFileURL]; }
-- (void)sendToHost:(NSString *)command sender:(id)sender { self.hostLaunchCount++; }
+- (void)sendToHost:(NSString *)command sender:(id)sender { self.hostLaunchCount++; self.lastCommand = command; self.lastContext = [self contextForSender:sender]; }
 @end
 
 static void check(BOOL condition, NSString *message) {
@@ -84,6 +87,60 @@ int main(void) {
             NSMenu *menu = [extension menuForMenuKind:FIMenuKindContextualMenuForContainer];
             check(menu.itemArray.firstObject.submenu != nil, @"Legacy/invalid settings must default to grouped menu");
         }
+        NSArray *developerCommands = @[@"json", @"js", @"ts", @"vue", @"html", @"css", @"yaml"];
+        NSArray *developerActions = @[@"newJSON:", @"newJavaScript:", @"newTypeScript:", @"newVue:", @"newHTML:", @"newCSS:", @"newYAML:"];
+        NSArray *developerNames = @[@"JSON", @"JavaScript", @"TypeScript", @"Vue", @"HTML", @"CSS", @"YAML"];
+        NSUInteger developerCases = 0;
+        for (NSString *language in @[@"zh", @"en"]) {
+            for (NSNumber *grouping in @[@YES, @NO]) {
+                for (NSUInteger mask = 0; mask < (1 << developerCommands.count); mask++) {
+                    NSMutableDictionary *enabled = [NSMutableDictionary dictionary];
+                    for (NSString *command in commands) enabled[command] = @NO;
+                    NSMutableArray *expected = [NSMutableArray array];
+                    for (NSUInteger i = 0; i < developerCommands.count; i++) {
+                        enabled[developerCommands[i]] = @((mask & (1 << i)) != 0);
+                        if ([enabled[developerCommands[i]] boolValue]) [expected addObject:developerActions[i]];
+                    }
+                    extension.testSettings = @{@"enabled": enabled, @"language": language, @"groupNewFiles": grouping};
+                    for (NSNumber *kind in @[@(FIMenuKindContextualMenuForContainer), @(FIMenuKindContextualMenuForItems), @(FIMenuKindToolbarItemMenu)]) {
+                        NSMenu *menu = [extension menuForMenuKind:kind.integerValue];
+                        NSMutableArray *actual = [NSMutableArray array];
+                        for (NSMenuItem *item in menu.itemArray) {
+                            if (item.action == @selector(openSettings:)) continue;
+                            for (NSMenuItem *child in item.submenu ? item.submenu.itemArray : @[item]) {
+                                [actual addObject:NSStringFromSelector(child.action)];
+                                NSUInteger index = [developerActions indexOfObject:NSStringFromSelector(child.action)];
+                                check(index != NSNotFound, @"Unexpected or PDF developer action");
+                                NSString *title = [NSString stringWithFormat:[language isEqual:@"en"] ? @"New %@ File" : @"新建 %@ 文件", developerNames[index]];
+                                check([child.title isEqual:title] && child.enabled, @"Developer localization or availability");
+                                NSMenuItem *finderCopy = [[NSMenuItem alloc] initWithTitle:child.title action:child.action keyEquivalent:@""];
+                                finderCopy.tag = child.tag;
+                                void (*invoke)(id, SEL, id) = (void *)[extension methodForSelector:child.action];
+                                invoke(extension, child.action, finderCopy);
+                                check([extension.lastCommand isEqual:developerCommands[index]], @"Developer command routed incorrectly");
+                                check([extension.lastContext[@"path"] isEqual:@"/private/tmp"], @"Copied developer item lost its directory snapshot");
+                            }
+                        }
+                        check([actual isEqual:expected], @"Developer feature filtering/order");
+                        check((menu == nil) == (mask == 0 && kind.integerValue != FIMenuKindToolbarItemMenu), @"Disabled developer formats left an empty menu");
+                        developerCases++;
+                    }
+                }
+            }
+        }
+        // All old and new features together, plus a missing/null opt-in value.
+        NSMutableDictionary *all = [NSMutableDictionary dictionary];
+        for (NSString *command in commands) all[command] = @YES;
+        for (NSString *command in developerCommands) all[command] = @YES;
+        extension.testSettings = @{@"enabled": all};
+        NSMenu *allMenu = [extension menuForMenuKind:FIMenuKindContextualMenuForContainer];
+        check(allMenu.itemArray.firstObject.submenu.numberOfItems == 12 && allMenu.numberOfItems == 6, @"All-enabled feature set missing formats or actions");
+        all[@"json"] = [NSNull null];
+        [all removeObjectForKey:@"js"];
+        extension.testSettings = @{@"enabled": all};
+        check([extension menuForMenuKind:FIMenuKindContextualMenuForContainer].itemArray.firstObject.submenu.numberOfItems == 10, @"Missing or invalid new settings must stay off");
+        extension.hostLaunchCount = 0;
+        printf("Passed %lu developer-format menu combinations and copied-item command routing; new formats opt-in and no PDF.\n", (unsigned long)developerCases);
         check(extension.toolbarItemImage != nil && extension.toolbarItemName.length > 0, @"Toolbar identity missing");
         check([extension menuForMenuKind:FIMenuKindContextualMenuForSidebar] == nil, @"Unsupported menu kind");
         NSURL *scratch = [[NSURL fileURLWithPath:NSTemporaryDirectory()] URLByAppendingPathComponent:NSUUID.UUID.UUIDString];

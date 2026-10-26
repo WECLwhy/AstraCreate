@@ -1,8 +1,53 @@
 #!/bin/zsh
+set -u
 
-/System/Library/Frameworks/CoreServices.framework/Frameworks/LaunchServices.framework/Support/lsregister -f /Applications/AstraCreate.app
-/usr/bin/pluginkit -a /Applications/AstraCreate.app/Contents/PlugIns/AstraCreateFinderExtension.appex
-/usr/bin/pluginkit -e use -i com.astracreate.finder.extension
-/usr/bin/killall Finder >/dev/null 2>&1 || true
+# Installer runs as root. PlugInKit elections belong to the logged-in user,
+# so both the GUI bootstrap context and the effective user must be switched.
+# The app is already installed; registration failures should be actionable in
+# the installer log, rather than claiming that the menu is ready.
+warn() {
+  echo "AstraCreate: $* Open AstraCreate and use Repair / Finder Extension Settings after login." >&2
+}
+
+if [[ "${3:-/}" != / ]]; then
+  warn "Installed on another volume; skipped current-session registration."
+  exit 0
+fi
+
+console_user=$(/usr/bin/stat -f %Su /dev/console) || { warn "Cannot determine console user."; exit 0; }
+case "$console_user" in
+  root|loginwindow|_mbsetupuser|"")
+    warn "No eligible logged-in user; registration deferred."
+    exit 0
+    ;;
+esac
+console_uid=$(/usr/bin/id -u "$console_user") || { warn "Cannot resolve console UID."; exit 0; }
+if [[ "$console_uid" != <-> || "$console_uid" -lt 501 ]]; then
+  warn "Console account is not a regular user; registration deferred."
+  exit 0
+fi
+
+as_console_user() {
+  /bin/launchctl asuser "$console_uid" /usr/bin/sudo -H -u "$console_user" "$@"
+}
+
+app=/Applications/AstraCreate.app
+if ! as_console_user /System/Library/Frameworks/CoreServices.framework/Frameworks/LaunchServices.framework/Support/lsregister -f "$app"; then
+  warn "LaunchServices registration failed."
+  exit 0
+fi
+if ! as_console_user /usr/bin/pluginkit -a "$app/Contents/PlugIns/AstraCreateFinderExtension.appex"; then
+  warn "Finder extension registration failed."
+  exit 0
+fi
+if ! as_console_user /usr/bin/pluginkit -e use -i com.astracreate.finder.extension; then
+  warn "Finder extension activation request failed."
+  exit 0
+fi
+echo "AstraCreate: Finder extension activation requested for the console user; macOS may require confirmation in extension settings."
+# Never restart another logged-in user's Finder.
+if ! as_console_user /usr/bin/killall -u "$console_user" Finder; then
+  warn "Finder was not restarted (it may not be running)."
+fi
 
 exit 0

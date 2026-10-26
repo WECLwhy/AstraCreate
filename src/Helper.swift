@@ -1,7 +1,5 @@
 import Foundation
 
-private let logURL = URL(fileURLWithPath: "/tmp/AstraCreateHost.log")
-
 private enum OfficeKind {
     case docx
     case xlsx
@@ -34,6 +32,7 @@ private func parseSelectedPaths(_ raw: String?) -> [String] {
 }
 
 private func run(command: String, path: String, selectedPaths: [String]) {
+    Diagnostics.local("helper").record(.commandReceived, operation: command)
     let directory = URL(fileURLWithPath: path)
     log("helper command \(command) path \(directory.path)")
     switch command {
@@ -46,22 +45,35 @@ private func run(command: String, path: String, selectedPaths: [String]) {
     case "vscode": openVSCode(at: directory)
     case "cut": cut(paths: selectedPaths)
     case "paste": paste(into: directory)
-    default: log("helper unknown command \(command)")
+    default:
+        if let kind = SourceFileKind(rawValue: command) { createSourceFile(kind, in: directory) }
+        else { Diagnostics.local("helper").record(.unknownCommand) }
     }
 }
 
 private func createTextFile(in directory: URL) {
     let output = uniqueFile(in: directory, base: "新建文本文件", ext: "txt")
-    FileManager.default.createFile(atPath: output.path, contents: Data(), attributes: nil)
+    guard FileManager.default.createFile(atPath: output.path, contents: Data(), attributes: nil) else {
+        Diagnostics.local("helper").record(.fileCreateFailed, operation: "txt")
+        return
+    }
     log("created txt \(output.path)")
     reveal(output)
 }
 
 private func createMarkdownFile(in directory: URL) {
     let output = uniqueFile(in: directory, base: "新建 Markdown 文件", ext: "md")
-    FileManager.default.createFile(atPath: output.path, contents: Data(), attributes: nil)
+    guard FileManager.default.createFile(atPath: output.path, contents: Data(), attributes: nil) else {
+        Diagnostics.local("helper").record(.fileCreateFailed, operation: "md")
+        return
+    }
     log("created md \(output.path)")
     reveal(output)
+}
+
+private func createSourceFile(_ kind: SourceFileKind, in directory: URL) {
+    do { reveal(try kind.create(in: directory, english: false)) }
+    catch { Diagnostics.local("helper").record(.fileCreateFailed, error: error, operation: kind.rawValue) }
 }
 
 private func createOfficeFile(kind: OfficeKind, in directory: URL) {
@@ -86,6 +98,7 @@ private func createOfficeFile(kind: OfficeKind, in directory: URL) {
         reveal(output)
     } catch {
         log("failed \(kind.ext): \(error)")
+        Diagnostics.local("helper").record(.fileCreateFailed, error: error, operation: kind.ext)
     }
     try? FileManager.default.removeItem(at: temp)
 }
@@ -104,6 +117,7 @@ private func createPowerPointFile(at output: URL) {
         reveal(output)
     } catch {
         log("failed pptx copy from \(template.path): \(error)")
+        Diagnostics.local("helper").record(.fileCreateFailed, error: error, operation: "pptx")
     }
 }
 
@@ -136,6 +150,7 @@ private func cut(paths: [String]) {
         log("cut stored \(existing.count) item(s)")
     } catch {
         log("cut failed: \(error)")
+        Diagnostics.local("helper").record(.clipboardWriteFailed, error: error)
     }
 }
 
@@ -153,6 +168,7 @@ private func paste(into directory: URL) {
     for path in paths {
         let source = URL(fileURLWithPath: path)
         guard FileManager.default.fileExists(atPath: source.path) else {
+            Diagnostics.local("helper").record(.moveFailed)
             log("paste missing source \(source.path)")
             continue
         }
@@ -164,6 +180,7 @@ private func paste(into directory: URL) {
             log("moved \(source.path) -> \(destination.path)")
         } catch {
             log("move failed \(source.path): \(error)")
+            Diagnostics.local("helper").record(.moveFailed, error: error)
         }
     }
 
@@ -218,8 +235,10 @@ private func runProcess(_ launchPath: String, arguments: [String], currentDirect
     do {
         try process.run()
         process.waitUntilExit()
+        if process.terminationStatus != 0 { Diagnostics.local("helper").record(.processFailed, value: Int(process.terminationStatus), operation: URL(fileURLWithPath: launchPath).lastPathComponent) }
         return process.terminationStatus
     } catch {
+        Diagnostics.local("helper").record(.processFailed, error: error, operation: URL(fileURLWithPath: launchPath).lastPathComponent)
         log("process failed \(launchPath): \(error)")
         return -1
     }
@@ -294,11 +313,16 @@ private func log(_ message: String) {
     // Release builds intentionally do not persist file paths or command URLs.
 }
 
-let args = CommandLine.arguments
-log("helper launch args \(args.dropFirst().joined(separator: " "))")
-guard args.count >= 3 else {
-    log("helper skipped: missing args")
-    exit(2)
+@main
+enum AstraCreateHelper {
+    static func main() {
+        Diagnostics.local("helper").record(.appStarted)
+        let args = CommandLine.arguments
+        guard args.count >= 3 else {
+            Diagnostics.local("helper").record(.unknownCommand)
+            exit(2)
+        }
+        let selectedPaths = parseSelectedPaths(args.dropFirst(3).first)
+        run(command: args[1], path: args[2], selectedPaths: selectedPaths)
+    }
 }
-let selectedPaths = parseSelectedPaths(args.dropFirst(3).first)
-run(command: args[1], path: args[2], selectedPaths: selectedPaths)

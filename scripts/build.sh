@@ -2,10 +2,21 @@
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
+# Relative compiler inputs also keep runtime source-location strings anonymous.
+cd "$ROOT"
 BUILD="$ROOT/build"
 APP="$BUILD/AstraCreate.app"
 APPEX="$APP/Contents/PlugIns/AstraCreateFinderExtension.appex"
 MODULE_CACHE="$BUILD/module-cache"
+
+ASTRA_APP_VERSION="$(/usr/libexec/PlistBuddy -c 'Print :CFBundleShortVersionString' "$ROOT/AppInfo.plist")"
+ASTRA_EXTENSION_VERSION="$(/usr/libexec/PlistBuddy -c 'Print :CFBundleShortVersionString' "$ROOT/ExtensionInfo.plist")"
+ASTRA_APP_BUILD="$(/usr/libexec/PlistBuddy -c 'Print :CFBundleVersion' "$ROOT/AppInfo.plist")"
+ASTRA_EXTENSION_BUILD="$(/usr/libexec/PlistBuddy -c 'Print :CFBundleVersion' "$ROOT/ExtensionInfo.plist")"
+if [[ "$ASTRA_APP_VERSION" != "$ASTRA_EXTENSION_VERSION" || "$ASTRA_APP_BUILD" != "$ASTRA_EXTENSION_BUILD" ]]; then
+  echo "App and Finder extension versions must match before building." >&2
+  exit 1
+fi
 
 rm -rf "$APP" "$MODULE_CACHE"
 mkdir -p "$APP/Contents/MacOS" "$APP/Contents/Resources" "$APPEX/Contents/MacOS" "$BUILD" "$MODULE_CACHE"
@@ -13,49 +24,29 @@ mkdir -p "$APP/Contents/MacOS" "$APP/Contents/Resources" "$APPEX/Contents/MacOS"
 cp "$ROOT/AppInfo.plist" "$APP/Contents/Info.plist"
 cp "$ROOT/ExtensionInfo.plist" "$APPEX/Contents/Info.plist"
 cp "$ROOT/Resources/blank.pptx" "$APP/Contents/Resources/blank.pptx"
+cp "$ROOT/Resources/FrostedBackdrop.png" "$APP/Contents/Resources/FrostedBackdrop.png"
 
-if [[ -f "$ROOT/Resources/AppIcon.icns" ]]; then
-  cp "$ROOT/Resources/AppIcon.icns" "$APP/Contents/Resources/AppIcon.icns"
-  cp "$ROOT/Resources/AppIcon.icns" "$ROOT/assets/AppIcon.icns"
-else
-  sips -c 700 700 --cropOffset -35 45 "$ROOT/Resources/SoftwareLogo.png" --out "$BUILD/AppIcon-cropped.png" >/dev/null
-  sips -z 1024 1024 "$BUILD/AppIcon-cropped.png" --out "$BUILD/AppIcon.png" >/dev/null
-  rm -rf "$BUILD/AppIcon.iconset"
-  mkdir -p "$BUILD/AppIcon.iconset"
-  sips -z 16 16 "$BUILD/AppIcon.png" --out "$BUILD/AppIcon.iconset/icon_16x16.png" >/dev/null
-  sips -z 32 32 "$BUILD/AppIcon.png" --out "$BUILD/AppIcon.iconset/icon_16x16@2x.png" >/dev/null
-  sips -z 32 32 "$BUILD/AppIcon.png" --out "$BUILD/AppIcon.iconset/icon_32x32.png" >/dev/null
-  sips -z 64 64 "$BUILD/AppIcon.png" --out "$BUILD/AppIcon.iconset/icon_32x32@2x.png" >/dev/null
-  sips -z 128 128 "$BUILD/AppIcon.png" --out "$BUILD/AppIcon.iconset/icon_128x128.png" >/dev/null
-  sips -z 256 256 "$BUILD/AppIcon.png" --out "$BUILD/AppIcon.iconset/icon_128x128@2x.png" >/dev/null
-  sips -z 256 256 "$BUILD/AppIcon.png" --out "$BUILD/AppIcon.iconset/icon_256x256.png" >/dev/null
-  sips -z 512 512 "$BUILD/AppIcon.png" --out "$BUILD/AppIcon.iconset/icon_256x256@2x.png" >/dev/null
-  sips -z 512 512 "$BUILD/AppIcon.png" --out "$BUILD/AppIcon.iconset/icon_512x512.png" >/dev/null
-  sips -z 1024 1024 "$BUILD/AppIcon.png" --out "$BUILD/AppIcon.iconset/icon_512x512@2x.png" >/dev/null
-  xattr -cr "$BUILD/AppIcon.iconset" >/dev/null 2>&1 || true
-  find "$BUILD/AppIcon.iconset" -exec xattr -d com.apple.provenance {} \; >/dev/null 2>&1 || true
-  if ! iconutil -c icns "$BUILD/AppIcon.iconset" -o "$APP/Contents/Resources/AppIcon.icns" >/dev/null 2>&1; then
-    sips -s format tiff "$BUILD/AppIcon.png" --out "$BUILD/AppIcon.tiff" >/dev/null
-    tiff2icns "$BUILD/AppIcon.tiff" "$APP/Contents/Resources/AppIcon.icns"
-  fi
-  cp "$APP/Contents/Resources/AppIcon.icns" "$ROOT/assets/AppIcon.icns"
-fi
+"$ROOT/scripts/build-icon.sh"
+cp "$ROOT/Resources/AppIcon.icns" "$APP/Contents/Resources/AppIcon.icns"
 
 env CLANG_MODULE_CACHE_PATH="$MODULE_CACHE" xcrun swiftc \
   -target arm64-apple-macos13.0 \
+  -file-prefix-map "$ROOT=." -debug-prefix-map "$ROOT=." \
   -o "$APP/Contents/MacOS/AstraCreate" \
-  "$ROOT/src/Main.swift" "$ROOT/src/FileMoveClipboard.swift" \
-  -framework AppKit
+  src/SourceFileTemplates.swift src/Main.swift src/FileMoveClipboard.swift src/FinderIntegration.swift src/Diagnostics.swift src/SettingsAppearance.swift src/AppearancePreferences.swift src/GitHubUpdater.swift src/UpdateUI.swift \
+  -framework AppKit -framework FinderSync
 
 env CLANG_MODULE_CACHE_PATH="$MODULE_CACHE" xcrun swiftc \
   -target arm64-apple-macos13.0 \
+  -file-prefix-map "$ROOT=." -debug-prefix-map "$ROOT=." \
   -o "$APP/Contents/MacOS/AstraCreateHelper" \
-  "$ROOT/src/Helper.swift" \
+  src/SourceFileTemplates.swift src/Helper.swift src/Diagnostics.swift \
   -framework Foundation
 
 SDKROOT="$(xcrun --sdk macosx --show-sdk-path)"
 env CLANG_MODULE_CACHE_PATH="$MODULE_CACHE" xcrun clang \
   -target arm64-apple-macos13.0 \
+  "-ffile-prefix-map=$ROOT=." "-fdebug-prefix-map=$ROOT=." \
   -isysroot "$SDKROOT" \
   -fobjc-arc \
   -fmodules \
@@ -64,7 +55,7 @@ env CLANG_MODULE_CACHE_PATH="$MODULE_CACHE" xcrun clang \
   -Xlinker -e \
   -Xlinker _NSExtensionMain \
   -o "$APPEX/Contents/MacOS/AstraCreateFinderExtension" \
-  "$ROOT/src/FinderSyncObjC.m"
+  src/FinderSyncObjC.m
 
 codesign --force --sign - --entitlements "$ROOT/Extension.entitlements" "$APPEX"
 codesign --force --sign - "$APP"

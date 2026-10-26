@@ -1,133 +1,89 @@
-# AstraCreate 2.17
+# AstraCreate 3.00
 
 ## 中文
 
-AstraCreate for macOS（星域新建）是一个 macOS Finder 右键菜单工具。安装后，可以在 Finder 文件夹空白处或选中文件后右键，快速新建常用文件、打开终端或 VS Code，并进行剪贴、粘贴和复制绝对路径等操作。
+版本3.00 / 构建31 · 2026-10-26 · macOS13或更高版本 · Apple Silicon（arm64）
 
-### 本次更新（自 2.16 起）
+### 本次更新
 
-- 修复新建 Word 文档缺少兼容性设置的问题：主程序与旧 helper 均生成 settings.xml、内容类型和文档关联，并声明 compatibilityMode=15。
-- 增加实际生成 DOCX 的回归检查，覆盖 XML 结构、兼容性设置及空作者字段；已有文档不会自动修改。
-- 测试脚本显式指定 macOS SDK 与 arm64 目标，避免本机 Command Line Tools 默认目标导致的链接错误。
-- 更新双语说明、校验文件与隐私发布检查，保留 2.16 的工具栏、设置和文件操作功能。
+- 新图标与原生磨砂玻璃设置界面，常用设置、外观、诊断支持分组；侧栏图标和文字间距改善。
+- 跟随系统、浅色、深色三种模式；浅深方案独立保存透明度、强调色和玻璃底色，支持系统色板及HEX输入，尊重系统“减少透明度”。
+- 实现 [issue #1](https://github.com/WECLwhy/AstraCreate/issues/1) 的JSON、JS、TS、Vue、HTML、CSS、YAML新建功能，不包含PDF。新增类型默认关闭，在“常用设置 → 开发文件”按需开启。原有五种格式和所有文件操作继续保留。
+- JSON使用有效空对象，HTML/Vue提供最小模板，其余为空白UTF-8文件；重名自动编号并保护已有文件。
+- 修复Finder扩展注册和启用请求，显示扩展状态，提供系统设置与修复入口；安装后在当前用户会话中注册，记录失败。
+- 结构化本地错误日志及一键JSON导出，不含文件路径、内容或剪切队列，不自动上传。
+- 手动检查GitHub正式版；用户确认下载并安装后才下载，可取消；校验来源、大小、PKG标识及SHA-256，再打开系统安装器。增加项目主页入口。
+- 发布构建使用相对源码位置，清除二进制中的本机源码路径；资源不含Office作者字段，源码包排除Git元数据、凭据、缓存和本地状态。
 
-### 版本与系统要求
+### 安装与升级
 
-- 版本：2.17；构建号：30；日期：2026-09-18。
-- macOS 13 或更高版本，Apple Silicon（arm64）；未提供 Intel 构建。
-- MIT 许可证。安装包未使用 Developer ID 签名，未公证。
+打开 `AstraCreate-3.00.pkg`，按系统提示授权和完成覆盖安装，再重新打开AstraCreate。保留旧设置；新增格式默认关闭。安装器会尝试重启当前用户的Finder，请先结束正在进行的Finder操作。
 
-### 功能
+本包沿用ad-hoc签名，没有Developer ID签名和Apple公证。macOS可能拦截或要求手动确认，应用不会绕过系统安全检查。未提供Intel构建。
 
-- 新建 Word 文档 `.docx`
-- 新建 Excel 表格 `.xlsx`
-- 新建 PowerPoint 演示文稿 `.pptx`
-- 新建文本文件 `.txt`
-- 新建 Markdown 文件 `.md`
-- 在当前文件夹打开终端
-- 在 VS Code 打开当前文件夹
-- 剪贴选中的文件或文件夹
-- 粘贴到当前文件夹
-- 复制选中文件或当前文件夹的绝对路径
-- 支持中文 / English 切换
+菜单未显示时，在“诊断与支持”查看状态，并打开系统Finder扩展设置。macOS15及更新系统通常位于“通用 → 登录项与扩展 → 扩展 → Finder”；macOS13/14位于“隐私与安全性 → 扩展 → Finder扩展”。启用“新建常用文件”；若列表中没有它，再使用“修复菜单显示…”。
 
-### 安装
+### 验证范围与已知限制
 
-下载并打开 `AstraCreate-2.17.pkg`。
+本版完成本机macOS27.0.1的PKG覆盖安装、安装后签名/版本检查、真实Finder工具栏菜单及七种开发格式的新建操作。完整自动化覆盖12,288组原有菜单与1,536组开发格式组合、设置迁移、文件移动、DOCX、诊断、外观和更新流程。更新的同意、下载取消及安装器交接使用隔离测试包/替身验证；没有宣称已完成真实远程新版的整段升级验收。
 
-当前安装包为本地 ad-hoc 构建，未使用 Apple Developer ID 签名。首次安装时 macOS 可能会显示安全确认。
+未在反馈者macOS15.0.1或全部支持系统上验证；没有完整Office界面、VoiceOver及系统辅助功能矩阵验收。此前一次跨目录移动延迟的原因仍未确认，目前无移动进度显示。微信下载文件的只读权限不由本版修改；Word兼容性设置仅适用于新建文档。
 
-如果右键菜单没有出现，请打开：
+检查更新仅获取正式版元数据；打开安装器不等于安装成功。复现问题后请导出诊断JSON并附步骤和脱敏截图，不要直接提交旧原始日志、剪切队列或完整容器。见[隐私说明](PRIVACY.md)。
 
-`系统设置 -> 隐私与安全性 -> 扩展 -> Finder 扩展`
+### 下载与校验
 
-确认 AstraCreate 对应扩展已启用。
+- `AstraCreate-3.00.pkg`：安装包。
+- `AstraCreate-Finder-3.00-source.zip`：源码、构建/测试脚本与MIT许可证。
+- `AstraCreate-3.00-SHA256SUMS.txt`：校验清单。
 
-### 升级与使用注意
+```zsh
+shasum -a 256 -c AstraCreate-3.00-SHA256SUMS.txt
+```
 
-直接安装覆盖旧版，安装器会重启 Finder；请先完成 Finder 中正在进行的操作。原有设置保留，从 2.16 之前版本升级时，尚未粘贴的剪切项目需重新选择。待移动队列独立于系统剪贴板。设置修改后重新打开菜单生效；“修复菜单显示…”仅用于故障排查。
-
-### 验证与已知问题
-
-自动化检查覆盖 12,288 组菜单组合、设置兼容性、真实文件移动，以及主程序和旧 helper 实际生成的 DOCX。DOCX、XLSX、PPTX 另经 Python 文档库进行写入、同路径保存和回读检查；TXT/MD 经 UTF-8 写入回读检查。此验证不等同于 Microsoft Office 界面回归，未验证 Excel 公式重算。
-
-本版尚未安装进行完整 Finder / Office 界面回归。此前本机出现过一次跨目录移动约 5 分钟延迟，复测正常，原因未确认；目前没有移动进度显示。部分新建失败仍缺少明确提示，请核对目标目录结果。尚未完成各支持系统、浅色和 VoiceOver 全覆盖验证。
-
-微信下载 Office 文件显示“只读”的排查发现样本没有文件写权限（0444），不是文档内部保护。复制可能保留此权限，另存为新文件的权限则可能不同。本版不会批量修改下载文件权限，也不宣称修复微信行为；请先确认文件来源和自己是否有编辑权限。Word 兼容模式修复仅适用于本版新建文件。
-
-### 下载文件与校验
-
-- `AstraCreate-2.17.pkg`：安装包。
-- `AstraCreate-Finder-2.17-source.zip`：源码，含构建、测试脚本与 MIT 许可证。
-- `AstraCreate-2.17-SHA256SUMS.txt`：SHA-256 校验清单。
-
-将三个文件放在同一目录，运行 `shasum -a 256 -c AstraCreate-2.17-SHA256SUMS.txt` 验证。源码构建：`./scripts/build.sh`；测试（需要 Python 3）：`./scripts/test.sh`；打包：`./scripts/package.sh dist`。
-
-反馈问题请提供系统版本、芯片、复现步骤；截图请遮盖用户名、私人文件名与路径。隐私说明见源码中的 `PRIVACY.md`。
+源码构建：`./scripts/build.sh`；测试：`./scripts/test.sh`；打包：`./scripts/package.sh dist`。
 
 ---
 
 ## English
 
-AstraCreate for macOS is a Finder context menu utility for macOS. After installation, you can right-click a blank area in Finder or selected items to quickly create common files, open Terminal or VS Code, cut and paste files, and copy absolute paths.
+Version3.00 / build31 · 2026-10-26 · macOS13+ · Apple Silicon (arm64)
 
-### Changes since 2.16
+### Changes
 
-- Add missing Word compatibility settings in both generators: settings.xml, content type, document relationship and compatibilityMode=15.
-- Add checks against actually generated DOCX packages for XML structure, compatibility settings and empty author fields. Existing documents remain unchanged.
-- Set the macOS SDK and arm64 target explicitly in the test script to avoid local Command Line Tools default-target linker errors.
-- Refresh bilingual documentation, checksums and privacy release checks while retaining the 2.16 toolbar, settings and file operations.
+- New icon and native frosted settings with General, Appearance and Diagnostics & Support pages; improved sidebar icon/title spacing.
+- System/light/dark modes, independently saved light/dark transparency, accent and glass tint, native color wells and HEX entry. Respects Reduce Transparency.
+- Implement the seven developer formats in [issue #1](https://github.com/WECLwhy/AstraCreate/issues/1): JSON, JS, TS, Vue, HTML, CSS and YAML, excluding PDF. Enable each under General → Developer Files; new formats are off by default. Retain the original five formats and all file actions.
+- JSON starts as a valid empty object; HTML/Vue have minimal templates; other developer files are blank UTF-8. Number collisions without overwriting existing items.
+- Repair Finder registration/activation requests, display activation status and link to system extension management. Installer registration runs in the current user's session and reports failures.
+- Bounded structured local logs and manual JSON export, excluding paths, contents and pending moves. No automatic upload.
+- Manual GitHub stable-release checks. Downloads require approval, can be cancelled, and pass source/size/PKG/SHA-256 checks before macOS Installer opens. Project-page navigation included.
+- Relative source locations remove local source paths from release binaries. Resources omit Office author fields; source archives exclude Git metadata, credentials, caches and local state.
 
-### Version and requirements
+### Installation and upgrade
 
-- Version 2.17; build 30; date: 2026-09-18.
-- macOS 13 or later, Apple Silicon (arm64); no Intel build is provided.
-- MIT license. The package has no Developer ID signature or notarization.
+Open `AstraCreate-3.00.pkg`, authorize and finish the system Installer steps, then reopen AstraCreate. Existing settings remain; new formats default to off. Installation attempts to restart the current user's Finder, so finish ongoing Finder work first.
 
-### Features
+The package remains ad-hoc signed, without Developer ID signing or Apple notarization. macOS may block it or require manual confirmation; the app does not bypass security checks. No Intel build is provided.
 
-- Create Word documents `.docx`
-- Create Excel workbooks `.xlsx`
-- Create PowerPoint presentations `.pptx`
-- Create text files `.txt`
-- Create Markdown files `.md`
-- Open Terminal in the current folder
-- Open the current folder in VS Code
-- Cut selected files or folders
-- Paste into the current folder
-- Copy absolute paths for selected items or the current folder
-- Chinese / English language switching
+If menus are absent, inspect Diagnostics & Support and open Finder extension settings. On macOS15 and newer, use General → Login Items & Extensions → Extensions → Finder; macOS13/14 use Privacy & Security → Extensions → Finder Extensions. Enable New Common Files; use Repair Finder Menus if it is missing from the list.
 
-### Installation
+### Validation and limitations
 
-Download and open `AstraCreate-2.17.pkg`.
+Local testing on macOS27.0.1 covers PKG overwrite installation, installed version/signature checks, live Finder toolbar menus and creation of all seven developer formats. The full automated suite covers the original12,288 menus plus1,536 developer-format combinations, settings migration, moves, DOCX, diagnostics, appearance and updating. Consent, cancellation and Installer handoff use isolated fixture packages/spies; this is not a claim of full real remote-update installation acceptance.
 
-This package is locally built with ad-hoc signing and is not signed with an Apple Developer ID. macOS may show a security confirmation on first install.
+The reporter's macOS15.0.1 and the full supported OS matrix remain unverified. Full Office UI, VoiceOver and accessibility-settings matrix acceptance is pending. A previously observed cross-folder move delay remains unexplained; there is no move progress indicator. This release does not change read-only WeChat download permissions. Word compatibility settings apply only to newly created files.
 
-If the Finder context menu does not appear, open:
-
-`System Settings -> Privacy & Security -> Extensions -> Finder Extensions`
-
-Then make sure the AstraCreate Finder extension is enabled.
-
-### Upgrade and usage notes
-
-Install over the previous version. The installer restarts Finder; finish active Finder operations first. Existing preferences are retained, but pending cuts from versions before 2.16 must be selected again. The pending-move queue is separate from the system clipboard. Reopen menus after changing settings; use Refresh Finder only for troubleshooting.
-
-### Validation and known issues
-
-Automated checks cover 12,288 menu combinations, settings compatibility, real filesystem moves and DOCX packages generated by both writers. DOCX, XLSX and PPTX also underwent Python library editing, same-path saving and read-back checks; TXT/MD underwent UTF-8 round-trip checks. These checks do not replace Microsoft Office UI testing or validate Excel formula recalculation.
-
-This release has not undergone a full installed Finder / Office UI regression. One earlier local cross-folder move took about five minutes; a repeat completed normally, but the cause remains unconfirmed. There is no move progress indicator, and some file-creation failures still lack a visible error. Check the destination before retrying. Testing does not cover every supported macOS version, light appearance or VoiceOver.
-
-Investigation of read-only WeChat downloads found a sample without filesystem write permission (0444), rather than internal document protection. Copies may retain permissions; saving a new file can produce different permissions. This release does not change download permissions or claim to fix WeChat behavior. Confirm the source and your editing rights first. The Word compatibility change applies only to newly generated documents.
+Opening Installer does not prove installation succeeded. For reports, export diagnostic JSON and include steps and redacted screenshots; do not share legacy raw logs, pending-move queues or whole containers. See [privacy information](PRIVACY.md).
 
 ### Downloads and verification
 
-- `AstraCreate-2.17.pkg`: installer.
-- `AstraCreate-Finder-2.17-source.zip`: source, build/test scripts and MIT license.
-- `AstraCreate-2.17-SHA256SUMS.txt`: checksum manifest.
+- `AstraCreate-3.00.pkg`: installer.
+- `AstraCreate-Finder-3.00-source.zip`: source, build/test scripts and MIT license.
+- `AstraCreate-3.00-SHA256SUMS.txt`: checksums.
 
-Place all three files in one directory and run `shasum -a 256 -c AstraCreate-2.17-SHA256SUMS.txt`. Build: `./scripts/build.sh`; tests (Python 3 required): `./scripts/test.sh`; package: `./scripts/package.sh dist`.
+```zsh
+shasum -a 256 -c AstraCreate-3.00-SHA256SUMS.txt
+```
 
-For bug reports, include OS version, chip and reproduction steps. Redact usernames, private filenames and paths from screenshots. See `PRIVACY.md` in the source for local data handling.
+Build: `./scripts/build.sh`; test: `./scripts/test.sh`; package: `./scripts/package.sh dist`.

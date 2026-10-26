@@ -1,5 +1,6 @@
 #import <Cocoa/Cocoa.h>
 #import <FinderSync/FinderSync.h>
+#import "DiagnosticLog.h"
 
 @interface FinderSync : FIFinderSync
 @property NSMutableDictionary<NSNumber *, NSDictionary *> *menuContexts;
@@ -13,6 +14,7 @@
     if (self) {
         [FIFinderSyncController defaultController].directoryURLs = [NSSet setWithObject:[NSURL fileURLWithPath:@"/"]];
         [self log:@"init"];
+        [self recordEvent:@"extensionStarted" error:nil value:nil];
     }
     return self;
 }
@@ -31,6 +33,7 @@
 
 - (NSMenu *)menuForMenuKind:(FIMenuKind)menuKind {
     [self log:[NSString stringWithFormat:@"menu requested %ld", (long)menuKind]];
+    [self recordEvent:@"menuRequested" error:nil value:@(menuKind)];
     if (menuKind != FIMenuKindContextualMenuForContainer && menuKind != FIMenuKindContextualMenuForItems && menuKind != FIMenuKindToolbarItemMenu) {
         return nil;
     }
@@ -48,7 +51,7 @@
     NSNumber *savedGrouping = settings[@"groupNewFiles"];
     BOOL groupNewFiles = ![savedGrouping isKindOfClass:[NSNumber class]] || savedGrouping.boolValue;
     NSMenu *filesMenu = groupNewFiles ? [[NSMenu alloc] initWithTitle:@""] : menu;
-    for (NSString *command in @[@"docx", @"xlsx", @"pptx", @"txt", @"md"]) {
+    for (NSString *command in @[@"docx", @"xlsx", @"pptx", @"txt", @"md", @"json", @"js", @"ts", @"vue", @"html", @"css", @"yaml"]) {
         [self addItemToMenu:filesMenu command:command enabled:enabled language:language];
     }
     if (groupNewFiles && filesMenu.numberOfItems > 0) {
@@ -127,7 +130,7 @@
     NSTask *task = [[NSTask alloc] init];
     task.executableURL = [NSURL fileURLWithPath:@"/usr/bin/open"];
     task.arguments = @[@"astracreate://settings"];
-    [task launchAndReturnError:NULL];
+    [self launchHostTask:task];
 }
 
 - (BOOL)addItemToMenu:(NSMenu *)menu command:(NSString *)command enabled:(NSDictionary<NSString *, NSNumber *> *)enabled language:(NSString *)language {
@@ -141,7 +144,8 @@
 
 - (BOOL)isCommand:(NSString *)command enabledIn:(NSDictionary<NSString *, NSNumber *> *)enabled {
     NSNumber *value = enabled[command];
-    return ![value isKindOfClass:[NSNumber class]] || value.boolValue;
+    if ([value isKindOfClass:[NSNumber class]]) return value.boolValue;
+    return ![@[@"json", @"js", @"ts", @"vue", @"html", @"css", @"yaml"] containsObject:command];
 }
 
 - (NSMenuItem *)itemWithTitle:(NSString *)title command:(NSString *)command {
@@ -154,6 +158,20 @@
         action = @selector(newPowerPoint:);
     } else if ([command isEqualToString:@"md"]) {
         action = @selector(newMarkdown:);
+    } else if ([command isEqualToString:@"json"]) {
+        action = @selector(newJSON:);
+    } else if ([command isEqualToString:@"js"]) {
+        action = @selector(newJavaScript:);
+    } else if ([command isEqualToString:@"ts"]) {
+        action = @selector(newTypeScript:);
+    } else if ([command isEqualToString:@"vue"]) {
+        action = @selector(newVue:);
+    } else if ([command isEqualToString:@"html"]) {
+        action = @selector(newHTML:);
+    } else if ([command isEqualToString:@"css"]) {
+        action = @selector(newCSS:);
+    } else if ([command isEqualToString:@"yaml"]) {
+        action = @selector(newYAML:);
     } else if ([command isEqualToString:@"terminal"]) {
         action = @selector(openTerminal:);
     } else if ([command isEqualToString:@"vscode"]) {
@@ -194,6 +212,34 @@
     [self sendToHost:@"md" sender:sender];
 }
 
+- (void)newJSON:(id)sender {
+    [self sendToHost:@"json" sender:sender];
+}
+
+- (void)newJavaScript:(id)sender {
+    [self sendToHost:@"js" sender:sender];
+}
+
+- (void)newTypeScript:(id)sender {
+    [self sendToHost:@"ts" sender:sender];
+}
+
+- (void)newVue:(id)sender {
+    [self sendToHost:@"vue" sender:sender];
+}
+
+- (void)newHTML:(id)sender {
+    [self sendToHost:@"html" sender:sender];
+}
+
+- (void)newCSS:(id)sender {
+    [self sendToHost:@"css" sender:sender];
+}
+
+- (void)newYAML:(id)sender {
+    [self sendToHost:@"yaml" sender:sender];
+}
+
 - (void)openTerminal:(id)sender {
     [self log:@"openTerminal clicked"];
     [self sendToHost:@"terminal" sender:sender];
@@ -218,6 +264,7 @@
     NSError *error = nil;
     BOOL ready = [[NSFileManager defaultManager] createDirectoryAtURL:[url URLByDeletingLastPathComponent] withIntermediateDirectories:YES attributes:nil error:&error];
     BOOL saved = ready && data && [data writeToURL:url options:NSDataWritingAtomic error:&error];
+    if (!saved) [self recordEvent:@"clipboardWriteFailed" error:error value:nil];
     [self log:saved ? [NSString stringWithFormat:@"cut recorded %lu item(s) without launching host", (unsigned long)paths.count] : [NSString stringWithFormat:@"cut failed: %@", error]];
 }
 
@@ -263,12 +310,14 @@
     NSError *encodeError = nil;
     NSData *data = [NSJSONSerialization dataWithJSONObject:selectedPaths options:0 error:&encodeError];
     if (!data) {
+        [self recordEvent:@"commandEncodingFailed" error:encodeError value:nil];
         [self log:[NSString stringWithFormat:@"failed to encode selected paths: %@", encodeError]];
         return;
     }
 
     NSString *selectedPathsJSON = [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding];
     if (!selectedPathsJSON) {
+        [self recordEvent:@"commandEncodingFailed" error:nil value:nil];
         [self log:@"failed to convert selected paths json"];
         return;
     }
@@ -283,6 +332,7 @@
     ];
     NSURL *url = components.URL;
     if (!url) {
+        [self recordEvent:@"commandEncodingFailed" error:nil value:nil];
         [self log:@"failed to build command url"];
         return;
     }
@@ -293,10 +343,7 @@
     task.arguments = @[@"-g", url.absoluteString];
     [self log:[NSString stringWithFormat:@"open url %@", url.absoluteString]];
 
-    NSError *error = nil;
-    if (![task launchAndReturnError:&error]) {
-        [self log:[NSString stringWithFormat:@"failed to open command url: %@", error]];
-    }
+    [self launchHostTask:task];
 }
 
 - (NSURL *)settingsFileURL {
@@ -315,6 +362,7 @@
     NSError *error = nil;
     NSDictionary *object = [NSJSONSerialization JSONObjectWithData:data options:0 error:&error];
     if (![object isKindOfClass:[NSDictionary class]]) {
+        [self recordEvent:@"settingsReadFailed" error:error value:nil];
         [self log:[NSString stringWithFormat:@"failed to load settings: %@", error]];
         return @{};
     }
@@ -361,6 +409,27 @@
     }
     if ([command isEqualToString:@"md"]) {
         return english ? @"New Markdown File" : @"新建 Markdown 文件";
+    }
+    if ([command isEqualToString:@"json"]) {
+        return english ? @"New JSON File" : @"新建 JSON 文件";
+    }
+    if ([command isEqualToString:@"js"]) {
+        return english ? @"New JavaScript File" : @"新建 JavaScript 文件";
+    }
+    if ([command isEqualToString:@"ts"]) {
+        return english ? @"New TypeScript File" : @"新建 TypeScript 文件";
+    }
+    if ([command isEqualToString:@"vue"]) {
+        return english ? @"New Vue File" : @"新建 Vue 文件";
+    }
+    if ([command isEqualToString:@"html"]) {
+        return english ? @"New HTML File" : @"新建 HTML 文件";
+    }
+    if ([command isEqualToString:@"css"]) {
+        return english ? @"New CSS File" : @"新建 CSS 文件";
+    }
+    if ([command isEqualToString:@"yaml"]) {
+        return english ? @"New YAML File" : @"新建 YAML 文件";
     }
     if ([command isEqualToString:@"terminal"]) {
         return english ? @"Open Terminal Here" : @"在此处打开终端";
@@ -409,6 +478,26 @@
 
 - (void)log:(NSString *)message {
     // Release builds intentionally do not persist file paths or command URLs.
+}
+
+- (NSURL *)diagnosticsDirectory {
+    return [[[self settingsFileURL] URLByDeletingLastPathComponent] URLByAppendingPathComponent:@"Diagnostics-v1" isDirectory:YES];
+}
+
+- (void)recordEvent:(NSString *)event error:(NSError *)error value:(NSNumber *)value {
+    ACDiagnosticRecord([self diagnosticsDirectory], event, error, value);
+}
+
+- (void)launchHostTask:(NSTask *)task {
+    // Do not persist open's stderr: it can contain command URLs and file paths.
+    task.standardOutput = [NSFileHandle fileHandleWithNullDevice];
+    task.standardError = [NSFileHandle fileHandleWithNullDevice];
+    NSURL *directory = [self diagnosticsDirectory];
+    task.terminationHandler = ^(NSTask *finished) {
+        if (finished.terminationStatus != 0) ACDiagnosticRecord(directory, @"hostLaunchFailed", nil, @(finished.terminationStatus));
+    };
+    NSError *error = nil;
+    if (![task launchAndReturnError:&error]) [self recordEvent:@"hostLaunchFailed" error:error value:nil];
 }
 
 @end

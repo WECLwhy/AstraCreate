@@ -1,267 +1,131 @@
 # AstraCreate for macOS / 星域文件新建
 
-<p align="center">
-  <a href="#中文"><strong>中文</strong></a>
-  |
-  <a href="#english"><strong>English</strong></a>
-</p>
+[中文](#中文) · [English](#english) · [GitHub](https://github.com/WECLwhy/AstraCreate)
 
 ## 下载 / Download
 
-- 安装包 / Package: [AstraCreate-2.17.pkg](https://github.com/WECLwhy/AstraCreate/releases/download/v2.17/AstraCreate-2.17.pkg)
-- 系统版本 / System version: macOS 13 or later, Apple Silicon Mac
-- 文档更新时间 / Document updated: 2026-09-18
+- [AstraCreate 3.00 PKG](https://github.com/WECLwhy/AstraCreate/releases/download/v3.00/AstraCreate-3.00.pkg)
+- [Source ZIP / 源码](https://github.com/WECLwhy/AstraCreate/releases/download/v3.00/AstraCreate-Finder-3.00-source.zip)
+- [SHA-256](https://github.com/WECLwhy/AstraCreate/releases/download/v3.00/AstraCreate-3.00-SHA256SUMS.txt)
+- macOS 13+ · Apple Silicon (arm64) · Version 3.00 / build 31 · 2026-10-26
 
 ## 中文
 
-**AstraCreate for macOS（星域文件新建）** 是一个 macOS Finder 右键菜单工具。安装后，可以在 Finder 文件夹空白处或选中文件后右键，直接新建常见文件、打开终端或 VS Code，并进行剪贴、粘贴和复制绝对路径等操作。
+AstraCreate 是轻量的 macOS Finder 菜单工具。在文件夹空白处或选中文件后右键，即可新建文件、打开终端或 VS Code，以及剪切、粘贴和复制路径。
 
-本项目由持有者为了在多系统之间保持同一种文件操作习惯而编写。欢迎在使用过程中指出 Bug，并请尽量附上 macOS 系统版本、设备类型、复现步骤和相关截图，方便定位问题。
+### 3.00 更新
 
-### 下载
+- 全新纸页星光图标、原生磨砂侧栏和设置面板；增大侧栏图标与文字间距。
+- 外观支持跟随系统、浅色和深色；两套方案分别保存玻璃透明度、侧栏强调色和底色，支持系统色板及 HEX 输入。系统“减少透明度”设置优先。
+- 实现 [issue #1](https://github.com/WECLwhy/AstraCreate/issues/1)：增加 JSON、JavaScript、TypeScript、Vue、HTML、CSS、YAML。新增格式默认关闭，可逐项开启，不含 PDF。
+- 修复 Finder 扩展注册和启用流程；设置显示启用状态，提供扩展设置入口及“修复菜单显示…”。安装脚本在当前登录用户的会话中注册并请求启用。
+- 新增有大小限制的结构化本地错误日志；手动导出一个 JSON 诊断文件，不含路径、文件内容或剪切队列，不自动上传。
+- 手动检查 GitHub 最新正式版；用户同意下载并安装后才获取安装包，通过来源、大小、PKG 标识和 SHA-256 校验后打开 macOS 安装器。可取消下载，保留系统安装授权及安全检查；提供项目页入口。
 
-- 安装包：[AstraCreate-2.17.pkg](https://github.com/WECLwhy/AstraCreate/releases/download/v2.17/AstraCreate-2.17.pkg)
-- 适用系统：macOS 13 或更高版本，Apple Silicon Mac
-- 文档更新时间：2026-09-18
+### 功能与设置
 
-发布详情与已知问题见 [发布说明](RELEASE_NOTES.md)，本地数据处理见 [隐私说明](PRIVACY.md)。
+原有五种格式：Word `.docx`、Excel `.xlsx`、PowerPoint `.pptx`、文本 `.txt`、Markdown `.md`。
 
-### 2.17 更新
+可选开发格式：JSON `.json`、JavaScript `.js`、TypeScript `.ts`、Vue `.vue`、HTML `.html`、CSS `.css`、YAML `.yaml`。在“常用设置 → 开发文件”中逐项开启。JSON 使用有效空对象，HTML/Vue 提供最小模板，其余为空白 UTF-8 文件。重名自动编号，不覆盖已有文件。
 
-- 新建 Word 文档显式声明现代兼容性模式（compatibilityMode=15），补齐设置文件及关联；已有文档不变。
-- 增加主程序和旧 helper 的 DOCX 生成回归检查，验证包结构、兼容性和匿名作者字段。
-- 保留 Finder 工具栏、可配置新建子菜单、分组设置及剪切队列等功能。
-- 微信下载文件的只读权限不由本次更新修改；请参阅发布说明中的排查范围。
+文件操作包括打开终端、在 VS Code 打开当前文件夹、剪切、粘贴及复制绝对路径。保留所有独立开关、中英文切换和新建子菜单/平铺设置；修改自动保存，下次打开菜单生效。
 
-### 功能
+### 安装与升级
 
-- 新建 Word 文档 `.docx`
-- 新建 Excel 表格 `.xlsx`
-- 新建 PowerPoint 演示文稿 `.pptx`
-- 新建文本文件 `.txt`
-- 新建 Markdown 文件 `.md`
-- 在当前文件夹打开终端
-- 在 VS Code 打开当前文件夹
-- 剪贴选中的文件或文件夹
-- 粘贴到当前文件夹
-- 复制选中文件或当前文件夹的绝对路径
-- 设置界面支持开启或关闭每个右键菜单功能
-- 设置界面支持中文 / English 切换，右键菜单和新文件默认名称会跟随语言
+下载并打开 `AstraCreate-3.00.pkg`，按 macOS 安装器提示授权并完成安装，随后重新打开 App。安装到 `/Applications/AstraCreate.app`，覆盖旧版并保留设置；安装器会尝试重启当前用户的 Finder，请先完成 Finder 中正在进行的操作。
 
-### 系统要求
+安装包沿用本地 ad-hoc 签名，**没有 Developer ID 签名或 Apple 公证**。macOS 可能阻止或要求手动确认；应用不会绕过这些检查。仅支持 Apple Silicon，未提供 Intel 构建。
 
-- macOS 13 或更高版本
-- Apple Silicon Mac
-- Xcode Command Line Tools，用于从源码构建
-- 可选：Visual Studio Code，用于“在 VS Code 打开当前文件夹”
+如果菜单未出现，先打开 AstraCreate 的“诊断与支持”查看扩展状态：
 
-### 安装
+- macOS 15 及更新系统：系统设置 → 通用 → 登录项与扩展 → 扩展 → Finder。
+- macOS 13/14：系统设置 → 隐私与安全性 → 扩展 → Finder 扩展。
 
-下载并打开 [AstraCreate-2.17.pkg](https://github.com/WECLwhy/AstraCreate/releases/download/v2.17/AstraCreate-2.17.pkg)。安装脚本会：
+启用“新建常用文件”。若列表中没有该扩展，使用“修复菜单显示…”重新注册并请求启用。系统显示已启用不等于菜单已经加载，请在普通本地文件夹实际检查。详见[发布说明](RELEASE_NOTES.md)。
 
-- 把 `AstraCreate.app` 安装到 `/Applications`
-- 注册 Finder Sync 扩展
-- 启用扩展
-- 重启 Finder
+从 2.16 之前的版本升级时，未粘贴的剪切项目需重新选择。剪切队列独立于系统剪贴板；只有粘贴时才移动文件。失败项保留以便重试。
 
-当前安装包为本地 ad-hoc 构建，未使用 Apple Developer ID 签名。首次安装时 macOS 可能会显示安全确认。
+### 检查更新与反馈
 
-如果右键菜单没有出现，请打开：
+“诊断与支持 → 检查更新…”只获取 GitHub 正式发布元数据。发现更高版本后显示版本、大小与说明；点击“下载并安装…”才开始下载，校验通过后交给系统安装器。打开安装器不代表安装成功，需要按系统提示完成安装。缺少或不匹配的校验信息会停止自动更新，并提供发布页入口。
 
-`系统设置 -> 隐私与安全性 -> 扩展 -> Finder 扩展`
+复现问题后，点击“导出诊断日志…”保存 JSON，再自行发给开发者，并提供 macOS 版本、芯片、步骤与脱敏截图。不要直接提交历史原始日志、完整容器或剪切队列。数据处理见[隐私说明](PRIVACY.md)。
 
-确认“新建常用文件”或 AstraCreate 对应扩展已启用。
+### 构建、测试与打包
 
-### 使用
-
-在 Finder 中打开任意文件夹，在空白处右键即可看到菜单项。移动文件时，先选中项目并点击“剪切（粘贴时移动）”，再到目标文件夹点击“将 N 项移到此处”。此队列独立于系统剪贴板。
-
-双击 `/Applications/AstraCreate.app` 可以打开设置界面。勾选或取消对应功能、切换中文 / English 后，下次打开菜单即可生效。仅在菜单或工具栏未更新时使用“修复菜单显示…”。
-
-首次在“桌面”“文稿”等受 macOS 隐私保护的位置操作时，系统可能会询问文件访问权限，请选择允许。
-
-### 从源码构建
+需要 Xcode Command Line Tools 和 Python 3：
 
 ```zsh
-chmod +x scripts/build.sh scripts/package.sh packaging/scripts/postinstall
 ./scripts/build.sh
-```
-
-构建后的 app 位于：
-
-```text
-build/AstraCreate.app
-```
-
-### 测试
-
-```zsh
 ./scripts/test.sh
-```
-
-需要 Python 3 和 Xcode Command Line Tools。覆盖 12,288 组菜单组合、设置兼容性、真实文件移动，以及主程序和旧 helper 生成的 DOCX 包。
-
-### 打包
-
-```zsh
 ./scripts/package.sh dist
 ```
 
-输出：
-
-```text
-dist/AstraCreate-2.17.pkg
-dist/AstraCreate-Finder-2.17-source.zip
-dist/AstraCreate-2.17-SHA256SUMS.txt
-```
-
-### 项目结构
-
-```text
-src/Main.swift                 设置界面主程序
-src/FileMoveClipboard.swift    待移动队列与安全粘贴逻辑
-src/Helper.swift               旧版命令行 helper（保留兼容）
-src/FinderSyncObjC.m           Finder Sync 扩展，负责右键菜单和命令转发
-Resources/SoftwareLogo.png     原始图标基准图
-Resources/AppIcon.icns         标准 macOS 多尺寸 app 图标
-Resources/blank.pptx           PowerPoint 空白模板
-scripts/build.sh               构建 app 和扩展
-scripts/package.sh             生成安装包和源码压缩包
-packaging/scripts/postinstall  安装后注册并启用 Finder 扩展
-```
-
-### 卸载
+构建产物为 `build/AstraCreate.app`。打包生成 `AstraCreate-3.00.pkg`、`AstraCreate-Finder-3.00-source.zip` 及 `AstraCreate-3.00-SHA256SUMS.txt`；版本从 plist 读取，主程序与扩展版本必须一致。
 
 ```zsh
-pluginkit -e ignore -i com.astracreate.finder.extension
-rm -rf /Applications/AstraCreate.app
-killall Finder
+shasum -a 256 -c AstraCreate-3.00-SHA256SUMS.txt
 ```
+
+自动化覆盖原有 12,288 组菜单和新增 1,536 组开发格式组合、设置、文件移动、DOCX、诊断、外观、更新与实际文件生成。替身系统操作和自动化结果不能代替目标系统的 Finder、Office 或完整辅助功能验收。具体本机安装验证范围见[发布说明](RELEASE_NOTES.md)。
+
+MIT 许可证。项目结构：`src/` 源码、`Resources/` 与 `assets/` 资源、`scripts/` 构建打包、`packaging/scripts/postinstall` 安装后处理、`tests/` 回归检查。
 
 ## English
 
-**AstraCreate for macOS** is a Finder context menu utility for macOS. After installation, you can right-click a blank area in Finder or selected items to create common files, open Terminal or VS Code, cut and paste files, and copy absolute paths.
+AstraCreate is a lightweight Finder menu utility. Right-click a folder background or selected items to create files, open Terminal or VS Code, cut/paste items and copy paths.
 
-This project was created by the owner to keep the same file-operation habits across multiple operating systems. Bug reports are welcome. When reporting an issue, please include your macOS version, device type, reproduction steps, and screenshots when possible.
+### New in 3.00
 
-### Download
+- New document/sparkle icon and native frosted settings; improved icon/title spacing in the sidebar.
+- System, light and dark appearance, with separate glass transparency, sidebar accent and tint for light/dark palettes. Native color wells and HEX entry; respects Reduce Transparency.
+- [Issue #1](https://github.com/WECLwhy/AstraCreate/issues/1): JSON, JavaScript, TypeScript, Vue, HTML, CSS and YAML. New formats are individually configurable and off by default; PDF is excluded.
+- Repair Finder registration and activation requests, display activation state and provide system extension management. Installer registration uses the logged-in user's session.
+- Bounded structured local error logs and manual JSON export, excluding paths, file contents and pending moves. No automatic upload.
+- Manual GitHub stable-release checks. Installer downloads require user consent, can be cancelled, and must pass source/size/PKG/SHA-256 checks before macOS Installer opens. System authorization and security checks remain in place; project navigation is included.
 
-- Package: [AstraCreate-2.17.pkg](https://github.com/WECLwhy/AstraCreate/releases/download/v2.17/AstraCreate-2.17.pkg)
-- System version: macOS 13 or later, Apple Silicon Mac
-- Document updated: 2026-09-18
+### Features and settings
 
-See [release notes and known issues](RELEASE_NOTES.md) and [privacy information](PRIVACY.md).
+Original formats: Word `.docx`, Excel `.xlsx`, PowerPoint `.pptx`, text `.txt` and Markdown `.md`.
 
-### What’s New in 2.17
+Optional developer formats: JSON `.json`, JavaScript `.js`, TypeScript `.ts`, Vue `.vue`, HTML `.html`, CSS `.css`, YAML `.yaml`. Enable each in General → Developer Files. JSON starts as an empty object, HTML/Vue have minimal templates, and other formats are blank UTF-8 files. Collisions use numbered names without overwriting existing items.
 
-- Declare modern Word compatibility mode (compatibilityMode=15), with settings and relationships, in newly created documents. Existing documents are unchanged.
-- Add DOCX generation regression checks for both generators, including package structure and anonymous author metadata.
-- Retain the Finder toolbar, configurable new-file submenu, grouped settings and pending-move queue.
-- This update does not change read-only permissions on WeChat downloads; see release notes for the investigation scope.
+Open Terminal or VS Code, cut, paste and copy absolute paths. Every feature has its own switch. Chinese/English and submenu/flat menu settings are retained. Changes save automatically and apply when the menu reopens.
 
-### Features
+### Install and upgrade
 
-- Create Word documents `.docx`
-- Create Excel workbooks `.xlsx`
-- Create PowerPoint presentations `.pptx`
-- Create text files `.txt`
-- Create Markdown files `.md`
-- Open Terminal in the current folder
-- Open the current folder in VS Code
-- Cut selected files or folders
-- Paste into the current folder
-- Copy absolute paths for selected items or the current folder
-- Settings window for enabling or disabling each context menu feature
-- Chinese / English language switch for the settings window, context menu, and default new-file names
+Open `AstraCreate-3.00.pkg`, authorize and complete the macOS Installer steps, then reopen the app. Installation replaces `/Applications/AstraCreate.app` and retains settings. It attempts to restart the current user's Finder; finish ongoing Finder work first.
 
-### Requirements
+The package uses local ad-hoc signing and **has no Developer ID signature or Apple notarization**. macOS may block it or require manual confirmation; the app does not bypass those protections. Requires macOS 13+ and Apple Silicon (arm64); no Intel build is provided.
 
-- macOS 13 or later
-- Apple Silicon Mac
-- Xcode Command Line Tools for building from source
-- Optional: Visual Studio Code for the VS Code menu item
+If the menu is missing, use Diagnostics & Support to inspect activation:
 
-### Install
+- macOS 15 and newer: System Settings → General → Login Items & Extensions → Extensions → Finder.
+- macOS 13/14: System Settings → Privacy & Security → Extensions → Finder Extensions.
 
-Download and open [AstraCreate-2.17.pkg](https://github.com/WECLwhy/AstraCreate/releases/download/v2.17/AstraCreate-2.17.pkg). The installer will:
+Enable New Common Files. If absent, use Repair Finder Menus to register it again and request activation. Enabled status alone does not prove live menu loading; check a regular local folder. See [release notes](RELEASE_NOTES.md).
 
-- Install `AstraCreate.app` into `/Applications`
-- Register the Finder Sync extension
-- Enable the extension
-- Restart Finder
+When upgrading from before 2.16, select pending cuts again. The pending-move queue is separate from the system clipboard. Items move only on paste; failures remain for retry.
 
-This package is locally built with ad-hoc signing and is not signed with an Apple Developer ID. macOS may show a security confirmation on first install.
+### Updates and feedback
 
-If the menu does not appear, open:
+Check for Updates fetches only GitHub stable-release metadata. A newer version shows its version, size and notes; Download & Install starts the transfer after consent. Verified packages open in macOS Installer. Opening Installer is not installation success: finish its authorization and installation steps. Missing or mismatched verification data stops automatic updates and offers a release-page link.
 
-`System Settings -> Privacy & Security -> Extensions -> Finder Extensions`
+After reproducing a problem, export diagnostic logs, then send the JSON file with your OS, chip, steps and redacted screenshots. Do not submit legacy raw logs, entire containers or pending-move queues. See [privacy information](PRIVACY.md).
 
-Then make sure the AstraCreate Finder extension is enabled.
+### Build, test and package
 
-### Usage
-
-Open any folder in Finder and right-click on a blank area to see the menu items. For cut/paste, select files and choose “Cut (Move on Paste)”, then choose “Move N Item(s) Here” in the destination folder. This pending-move queue is independent of the system clipboard.
-
-Open `/Applications/AstraCreate.app` to show the settings window. Toggle the desired features or switch between Chinese and English, then reopen the menu to apply. Use “Refresh Finder…” only if menus or the toolbar do not update.
-
-When operating in privacy-protected locations such as Desktop or Documents for the first time, macOS may ask for file access permission. Allow it if prompted.
-
-### Build From Source
+Requires Xcode Command Line Tools and Python 3:
 
 ```zsh
-chmod +x scripts/build.sh scripts/package.sh packaging/scripts/postinstall
 ./scripts/build.sh
-```
-
-The built app will be available at:
-
-```text
-build/AstraCreate.app
-```
-
-### Tests
-
-Requires Python 3 and Xcode Command Line Tools. Includes generated DOCX validation for both writers.
-
-```zsh
 ./scripts/test.sh
-```
-
-Checks 12,288 menu combinations, legacy/invalid settings and unsupported menu contexts.
-
-### Package
-
-```zsh
 ./scripts/package.sh dist
+shasum -a 256 -c dist/AstraCreate-3.00-SHA256SUMS.txt
 ```
 
-Outputs:
+App output: `build/AstraCreate.app`. Release outputs: installer, source ZIP and SHA-256 manifest. Package names derive from plist metadata; host/extension versions must match.
 
-```text
-dist/AstraCreate-2.17.pkg
-dist/AstraCreate-Finder-2.17-source.zip
-dist/AstraCreate-2.17-SHA256SUMS.txt
-```
+Tests cover the original 12,288 menus plus 1,536 developer-format combinations, settings, moves, DOCX, diagnostics, appearance, updating and real file generation. Stubbed system actions and automated tests do not replace installed Finder/Office or full accessibility acceptance. The local installation test scope is recorded in [release notes](RELEASE_NOTES.md).
 
-### Project Structure
-
-```text
-src/Main.swift                 Settings UI host app
-src/FileMoveClipboard.swift    Pending move queue and paste handling
-src/Helper.swift               Legacy command-line helper
-src/FinderSyncObjC.m           Finder Sync extension: context menu and command forwarding
-Resources/SoftwareLogo.png     Original icon reference image
-Resources/AppIcon.icns         Standard multi-size macOS app icon
-Resources/blank.pptx           Blank PowerPoint template
-scripts/build.sh               Builds the app and extension
-scripts/package.sh             Creates installer and source archive
-packaging/scripts/postinstall  Registers and enables the Finder extension after install
-```
-
-### Uninstall
-
-```zsh
-pluginkit -e ignore -i com.astracreate.finder.extension
-rm -rf /Applications/AstraCreate.app
-killall Finder
-```
+MIT license. `src/`: code; `Resources/`, `assets/`: media; `scripts/`: build/package; `packaging/scripts/postinstall`: installer registration; `tests/`: regression checks.

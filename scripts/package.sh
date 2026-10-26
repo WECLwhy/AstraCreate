@@ -3,6 +3,11 @@ set -euo pipefail
 setopt NULL_GLOB
 
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
+ASTRA_RELEASE_VERSION="$(/usr/libexec/PlistBuddy -c 'Print :CFBundleShortVersionString' "$ROOT/AppInfo.plist")"
+if [[ ! "$ASTRA_RELEASE_VERSION" =~ '^[0-9]+(\.[0-9]+){0,3}$' ]]; then
+  echo "Invalid release version in AppInfo.plist" >&2
+  exit 1
+fi
 OUT="${1:-$ROOT/dist}"
 if [[ "$OUT" != /* ]]; then
   OUT="$ROOT/$OUT"
@@ -23,11 +28,11 @@ COPYFILE_DISABLE=1 pkgbuild \
   --root "$PKGROOT" \
   --scripts "$ROOT/packaging/scripts" \
   --identifier com.astracreate.finder.pkg \
-  --version 2.17 \
+  --version "$ASTRA_RELEASE_VERSION" \
   --install-location / \
   --filter '.*\._.*' \
   --filter '.*\.DS_Store' \
-  "$OUT/AstraCreate-2.17.pkg"
+  "$OUT/AstraCreate-${ASTRA_RELEASE_VERSION}.pkg"
 
 mkdir -p "$SOURCE_STAGE/AstraCreate-Finder"
 # Copy release inputs explicitly so packaging also works from a source ZIP.
@@ -40,9 +45,9 @@ done
   -x "*/.DS_Store" "*/._*" "*/.env" "*/.env.*" "*.log" "*.pem" "*.key" "*.p12" "*/clipboard.json" "*/settings.json")
 
 # Replace the archive instead of updating it, so removed private entries cannot survive.
-mv -f "$SOURCE_STAGE/source.zip" "$OUT/AstraCreate-Finder-2.17-source.zip"
+mv -f "$SOURCE_STAGE/source.zip" "$OUT/AstraCreate-Finder-${ASTRA_RELEASE_VERSION}-source.zip"
 
-echo "Package: $OUT/AstraCreate-2.17.pkg"
-echo "Source:  $OUT/AstraCreate-Finder-2.17-source.zip"
+echo "Package: $OUT/AstraCreate-${ASTRA_RELEASE_VERSION}.pkg"
+echo "Source:  $OUT/AstraCreate-Finder-${ASTRA_RELEASE_VERSION}-source.zip"
 
-(cd "$OUT" && shasum -a 256 AstraCreate-2.17.pkg AstraCreate-Finder-2.17-source.zip > AstraCreate-2.17-SHA256SUMS.txt)
+(cd "$OUT" && shasum -a 256 AstraCreate-${ASTRA_RELEASE_VERSION}.pkg AstraCreate-Finder-${ASTRA_RELEASE_VERSION}-source.zip > AstraCreate-${ASTRA_RELEASE_VERSION}-SHA256SUMS.txt)
