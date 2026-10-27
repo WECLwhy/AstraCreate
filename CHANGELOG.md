@@ -1,5 +1,12 @@
 # Changelog / 更新记录
 
+## 未发布 / Unreleased
+
+- 补齐中英文使用手册与 Wiki、真实界面截图、兼容性记录、反馈表单、贡献与安全说明，以及 macOS 14/15 自动化构建、回归和包隐私检查。
+- Add bilingual guides/Wiki, real screenshots, compatibility evidence, issue forms, contribution/security policies and macOS 14/15 build/test/package privacy checks.
+- 显式捕获更新进度回调中的弱引用，兼容 Swift 5.10 编译器。以上主分支变更不替换既有 3.00 发布包或标签。
+- Explicitly capture the weak progress controller for Swift 5.10 compatibility. These main-branch changes do not replace existing 3.00 release assets or tags.
+
 ## 3.00 — 2026-10-26
 
 Build 31 / 构建31。
