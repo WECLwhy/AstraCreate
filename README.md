@@ -9,6 +9,28 @@
 - [SHA-256](https://github.com/WECLwhy/AstraCreate/releases/download/v3.00/AstraCreate-3.00-SHA256SUMS.txt)
 - macOS 13+ · Apple Silicon (arm64) · Version 3.00 / build 31 · 2026-10-26
 
+[![macOS CI](https://github.com/WECLwhy/AstraCreate/actions/workflows/ci.yml/badge.svg)](https://github.com/WECLwhy/AstraCreate/actions/workflows/ci.yml)
+
+[使用手册 / Guide](docs/README.md) · [Wiki](https://github.com/WECLwhy/AstraCreate/wiki) · [兼容性 / Compatibility](docs/compatibility.md) · [反馈 / Support](SUPPORT.md) · [贡献 / Contributing](CONTRIBUTING.md)
+
+### 快速开始 / Quick start
+
+1. 安装上方 PKG 并完成系统授权。 / Install the PKG above and finish system authorization.
+2. 打开 App，在系统设置启用 Finder 扩展。 / Open the app and enable its Finder extension in System Settings.
+3. 在普通文件夹空白处右键 → 新建文件。开发格式在设置中按需开启。 / Right-click a regular folder background → New File; enable optional formats in settings.
+
+[菜单不显示？/ Missing menus?](docs/zh/finder-troubleshooting.md) · [English troubleshooting](docs/en/finder-troubleshooting.md)
+
+### 界面预览 / Interface preview
+
+以下为已安装 3.00 的真实截图，拍摄于 macOS 27.0.1。 / Actual installed 3.00 screenshots on macOS 27.0.1.
+
+| 浅色 / Light | 深色 / Dark |
+|---|---|
+| ![浅色外观 / Light](docs/screenshots/appearance-light.png) | ![深色外观 / Dark](docs/screenshots/appearance-dark.png) |
+
+[开发格式设置 / Developer file settings](docs/screenshots/developer-files.png)
+
 ## 中文
 
 AstraCreate 是轻量的 macOS Finder 菜单工具。在文件夹空白处或选中文件后右键，即可新建文件、打开终端或 VS Code，以及剪切、粘贴和复制路径。

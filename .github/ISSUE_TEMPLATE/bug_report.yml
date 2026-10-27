@@ -1,0 +1,126 @@
+{
+  "name": "Bug 反馈 / Bug report",
+  "description": "报告可复现的问题 / Report a reproducible problem",
+  "title": "[Bug] ",
+  "body": [
+    {
+      "type": "markdown",
+      "attributes": {
+        "value": "请先查阅 [Finder 排障 / troubleshooting](https://github.com/WECLwhy/AstraCreate/wiki/Finder-Troubleshooting-zh)。安全漏洞请用 [private reporting](https://github.com/WECLwhy/AstraCreate/security/advisories/new)，不要公开上传凭据或私人文件。"
+      }
+    },
+    {
+      "type": "input",
+      "id": "version",
+      "attributes": {
+        "label": "AstraCreate 版本 / Version",
+        "description": "例如 / e.g. 3.00 build 31"
+      },
+      "validations": {
+        "required": true
+      }
+    },
+    {
+      "type": "input",
+      "id": "macos",
+      "attributes": {
+        "label": "macOS 完整版本 / Full macOS version",
+        "description": "例如 / e.g. 15.0.1"
+      },
+      "validations": {
+        "required": true
+      }
+    },
+    {
+      "type": "dropdown",
+      "id": "chip",
+      "attributes": {
+        "label": "芯片 / Chip",
+        "options": [
+          "Apple Silicon (M1/M2/M3/M4/other)",
+          "Intel",
+          "不确定 / Not sure"
+        ]
+      },
+      "validations": {
+        "required": true
+      }
+    },
+    {
+      "type": "dropdown",
+      "id": "installation",
+      "attributes": {
+        "label": "安装方式 / Installation",
+        "options": [
+          "GitHub PKG",
+          "源码构建 / Source build",
+          "其他 / Other"
+        ]
+      },
+      "validations": {
+        "required": true
+      }
+    },
+    {
+      "type": "dropdown",
+      "id": "area",
+      "attributes": {
+        "label": "相关功能 / Area",
+        "options": [
+          "Finder 菜单 / Menus",
+          "新建文件 / File creation",
+          "移动与剪切 / Moving files",
+          "外观 / Appearance",
+          "检查更新 / Updating",
+          "诊断 / Diagnostics",
+          "其他 / Other"
+        ]
+      },
+      "validations": {
+        "required": true
+      }
+    },
+    {
+      "type": "textarea",
+      "id": "steps",
+      "attributes": {
+        "label": "复现步骤 / Steps",
+        "description": "包含普通文件夹或云盘等环境，但请隐藏个人路径。 / Describe the folder context without personal paths."
+      },
+      "validations": {
+        "required": true
+      }
+    },
+    {
+      "type": "textarea",
+      "id": "expected",
+      "attributes": {
+        "label": "预期与实际结果 / Expected and actual behavior"
+      },
+      "validations": {
+        "required": true
+      }
+    },
+    {
+      "type": "textarea",
+      "id": "evidence",
+      "attributes": {
+        "label": "可选诊断与截图 / Optional diagnostics and screenshots",
+        "description": "可附 App 导出的 JSON。请自行检查脱敏，不要上传旧原始日志、clipboard.json 或完整容器。 / Review and redact the exported JSON; no legacy raw logs, clipboard queue or full container."
+      }
+    },
+    {
+      "type": "checkboxes",
+      "id": "privacy",
+      "attributes": {
+        "label": "隐私检查 / Privacy review",
+        "options": [
+          {
+            "label": "我已检查并脱敏附件；未包含密码、令牌、剪切队列或完整容器。 / Attachments are reviewed/redacted and contain no credentials, pending-move queue or entire container.",
+            "required": true
+          }
+        ]
+      }
+    }
+  ]
+}

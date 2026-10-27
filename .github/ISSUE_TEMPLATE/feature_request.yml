@@ -1,0 +1,54 @@
+{
+  "name": "功能建议 / Feature request",
+  "description": "说明问题与改进场景 / Describe a need and proposed behavior",
+  "title": "[Feature] ",
+  "body": [
+    {
+      "type": "markdown",
+      "attributes": {
+        "value": "请先查阅 [Finder 排障 / troubleshooting](https://github.com/WECLwhy/AstraCreate/wiki/Finder-Troubleshooting-zh)。安全漏洞请用 [private reporting](https://github.com/WECLwhy/AstraCreate/security/advisories/new)，不要公开上传凭据或私人文件。"
+      }
+    },
+    {
+      "type": "textarea",
+      "id": "problem",
+      "attributes": {
+        "label": "使用场景与问题 / Use case and problem"
+      },
+      "validations": {
+        "required": true
+      }
+    },
+    {
+      "type": "textarea",
+      "id": "proposal",
+      "attributes": {
+        "label": "希望的行为 / Proposed behavior"
+      },
+      "validations": {
+        "required": true
+      }
+    },
+    {
+      "type": "textarea",
+      "id": "impact",
+      "attributes": {
+        "label": "替代方案与兼容性 / Alternatives and compatibility",
+        "description": "可选：默认开关、隐私、菜单长度或文件兼容性影响。 / Optional: defaults, privacy, menu length or format compatibility."
+      }
+    },
+    {
+      "type": "checkboxes",
+      "id": "privacy",
+      "attributes": {
+        "label": "隐私检查 / Privacy review",
+        "options": [
+          {
+            "label": "我已检查并脱敏附件；未包含密码、令牌、剪切队列或完整容器。 / Attachments are reviewed/redacted and contain no credentials, pending-move queue or entire container.",
+            "required": true
+          }
+        ]
+      }
+    }
+  ]
+}

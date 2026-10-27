@@ -1,0 +1,15 @@
+{
+  "blank_issues_enabled": false,
+  "contact_links": [
+    {
+      "name": "使用手册 / User guide",
+      "url": "https://github.com/WECLwhy/AstraCreate/wiki",
+      "about": "安装、Finder排障、外观和更新 / Installation, Finder, appearance and updating"
+    },
+    {
+      "name": "私密漏洞举报 / Private vulnerability report",
+      "url": "https://github.com/WECLwhy/AstraCreate/security/advisories/new",
+      "about": "安全问题不要在公开Issue提交 / Do not post security-sensitive reports publicly"
+    }
+  ]
+}

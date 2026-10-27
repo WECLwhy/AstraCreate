@@ -37,7 +37,7 @@ COPYFILE_DISABLE=1 pkgbuild \
 mkdir -p "$SOURCE_STAGE/AstraCreate-Finder"
 # Copy release inputs explicitly so packaging also works from a source ZIP.
 # Never include repository metadata, build caches or local configuration.
-for entry in src Resources assets scripts packaging tests AppInfo.plist ExtensionInfo.plist Extension.entitlements README.md CHANGELOG.md RELEASE_NOTES.md PRIVACY.md LICENSE .gitignore; do
+for entry in src Resources assets scripts packaging tests docs .github CONTRIBUTING.md SECURITY.md SUPPORT.md CODE_OF_CONDUCT.md AppInfo.plist ExtensionInfo.plist Extension.entitlements README.md CHANGELOG.md RELEASE_NOTES.md PRIVACY.md LICENSE .gitignore; do
   COPYFILE_DISABLE=1 ditto --norsrc "$ROOT/$entry" "$SOURCE_STAGE/AstraCreate-Finder/$entry"
 done
 
