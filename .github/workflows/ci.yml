@@ -1,0 +1,58 @@
+name: macOS CI
+
+'on':
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build-test-package:
+    name: Build, test and audit (${{ matrix.os }}, arm64)
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [macos-14, macos-15]
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Verify runner architecture
+        run: |
+          test "$(uname -m)" = arm64
+          sw_vers
+          xcodebuild -version
+      - name: Check project, documentation and privacy
+        run: python3 scripts/check-project.py
+      - name: Generate Wiki preview
+        run: python3 scripts/sync-wiki.py build/wiki-preview --preview
+      - name: Build
+        run: ./scripts/build.sh
+      - name: Regression tests (isolated system actions)
+        shell: bash
+        run: |
+          set -euo pipefail
+          ./scripts/test.sh 2>&1 | tee build/ci-tests.txt
+      - name: Package and verify
+        run: |
+          ./scripts/package.sh dist
+          python3 scripts/check-project.py --package-dir dist
+      - name: Upload test evidence
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: ci-evidence-${{ matrix.os }}
+          path: |
+            build/ci-tests.txt
+            dist/*-SHA256SUMS.txt
+          if-no-files-found: ignore
+          retention-days: 7
