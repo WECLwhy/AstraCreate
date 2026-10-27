@@ -63,7 +63,7 @@ final class UpdateUIController: NSObject {
                     showProgress()
                     Diagnostics.local().record(.updateDownloadStarted)
                     let package = try await updater.prepare(update, approved: true) { [weak self] value in
-                        Task { @MainActor in
+                        Task { @MainActor [weak self] in
                             guard let self, self.progressPanel != nil else { return }
                             self.progressBar.doubleValue = value
                             self.progressLabel.stringValue = self.text("下载并校验安装包… \(Int(value * 100))%", "Downloading and verifying… \(Int(value * 100))%")
